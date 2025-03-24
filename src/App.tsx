@@ -16,6 +16,7 @@ import Properties from "./pages/Properties";
 import PropertyDetail from "./pages/PropertyDetail";
 import Reservations from "./pages/Reservations";
 
+// Create a new QueryClient instance
 const queryClient = new QueryClient();
 
 // Add page transition animation
