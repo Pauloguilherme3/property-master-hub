@@ -5,7 +5,15 @@ export enum UserRole {
   SUPERVISOR = "supervisor",
   GERENTE_PRODUTO = "gerente_produto",
   ADMINISTRADOR = "administrador",
-  FUNCIONARIO = "funcionario"
+  FUNCIONARIO = "funcionario",
+  
+  // English aliases for backward compatibility
+  AGENT = "corretor",
+  MANAGER = "gerente",
+  SUPERVISOR = "supervisor",
+  PRODUCT_MANAGER = "gerente_produto",
+  ADMINISTRATOR = "administrador",
+  STAFF = "funcionario"
 }
 
 export interface User {
@@ -14,6 +22,9 @@ export interface User {
   email: string;
   role: UserRole;
   avatar?: string;
+  
+  // English alias for backward compatibility
+  name?: string;
 }
 
 export interface Empreendimento {
@@ -49,7 +60,37 @@ export interface Empreendimento {
   dataAtualizacao: string;
   criadoPor: string;
   corretorResponsavelId?: string;
+  
+  // English aliases for backward compatibility
+  title?: string;
+  description?: string;
+  price?: number;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  builder?: string;
+  propertyType?: "house" | "apartment" | "lot" | "commercial";
+  deliveryForecast?: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  size?: number;
+  images?: string[];
+  virtualTour?: string;
+  featured?: boolean;
+  amenities?: string[];
+  constructionStage?: {
+    name: string;
+    percentageCompleted: number;
+  }[];
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  agentInChargeId?: string;
 }
+
+// Alias for backward compatibility
+export interface Property extends Empreendimento {}
 
 export interface Unidade {
   id: string;
@@ -67,7 +108,25 @@ export interface Unidade {
     x: number;
     y: number;
   };
+  
+  // English aliases
+  propertyId?: string;
+  number?: string;
+  block?: string;
+  floor?: number;
+  bedrooms?: number;
+  bathrooms?: number;
+  size?: number;
+  price?: number;
+  floorPlan?: string;
+  position?: {
+    x: number;
+    y: number;
+  };
 }
+
+// Alias for backward compatibility
+export interface Unit extends Unidade {}
 
 export interface Corretor {
   id: string;
@@ -84,7 +143,21 @@ export interface Corretor {
   negociosFechados: number;
   dataIngresso: string;
   status: "ativo" | "inativo" | "ferias";
+  
+  // English aliases
+  name?: string;
+  phone?: string;
+  bio?: string;
+  specialties?: string[];
+  rating?: number;
+  salesVolume?: number;
+  activeListings?: number;
+  closedDeals?: number;
+  joinedAt?: string;
 }
+
+// Alias for backward compatibility
+export interface Agent extends Corretor {}
 
 export interface DesempenhoCorretor {
   corretorId: string;
@@ -95,7 +168,20 @@ export interface DesempenhoCorretor {
   receita: number;
   satisfacaoCliente: number;
   tempoResposta: number;
+  
+  // English aliases
+  agentId?: string;
+  period?: string;
+  leadsAssigned?: number;
+  leadsConverted?: number;
+  propertiesSold?: number;
+  revenue?: number;
+  customerSatisfaction?: number;
+  responseTime?: number;
 }
+
+// Alias for backward compatibility
+export interface AgentPerformance extends DesempenhoCorretor {}
 
 export interface Lead {
   id: string;
@@ -109,6 +195,17 @@ export interface Lead {
   corretorResponsavelId?: string;
   dataCriacao: string;
   dataAtualizacao: string;
+  
+  // English aliases
+  clientName?: string;
+  clientEmail?: string;
+  clientPhone?: string;
+  propertyId?: string;
+  source?: string;
+  notes?: string;
+  agentInChargeId?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Reserva {
@@ -130,7 +227,28 @@ export interface Reserva {
   criadoPor: string;
   valorSinal?: number;
   documentos?: string[];
+  
+  // English aliases
+  propertyId?: string;
+  unitId?: string;
+  property?: Property;
+  unit?: Unit;
+  clientName?: string;
+  clientEmail?: string;
+  clientPhone?: string;
+  startDate?: string;
+  endDate?: string;
+  notes?: string;
+  agentId?: string;
+  visitType?: "in-person" | "virtual";
+  createdAt?: string;
+  createdBy?: string;
+  depositAmount?: number;
+  documents?: string[];
 }
+
+// Alias for backward compatibility
+export interface Reservation extends Reserva {}
 
 export interface AuthContextType {
   user: User | null;
@@ -154,6 +272,8 @@ export interface FiltroEmpreendimento {
   status?: string[];
 }
 
+export interface PropertyFilter extends FiltroEmpreendimento {}
+
 export interface FormaPagamento {
   id: string;
   nome: string;
@@ -161,4 +281,13 @@ export interface FormaPagamento {
   parcelas: number;
   taxaJuros?: number;
   entradaMinima?: number;
+  
+  // English aliases
+  name?: string;
+  description?: string;
+  installments?: number;
+  interestRate?: number;
+  minimumDownPayment?: number;
 }
+
+export interface PaymentMethod extends FormaPagamento {}

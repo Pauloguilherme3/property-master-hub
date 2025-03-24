@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Property } from "@/types";
+import { Empreendimento } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -14,9 +14,10 @@ import {
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { ptBR } from "date-fns/locale";
 
 interface ReservationFormProps {
-  property: Property;
+  property: Empreendimento;
 }
 
 export function ReservationForm({ property }: ReservationFormProps) {
@@ -36,8 +37,8 @@ export function ReservationForm({ property }: ReservationFormProps) {
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     toast({
-      title: "Reservation Submitted",
-      description: `Your reservation for ${property.title} has been submitted for ${date ? format(date, "PPP") : ""}`,
+      title: "Reserva Enviada",
+      description: `Sua reserva para ${property.nome} foi enviada para ${date ? format(date, "PPP", { locale: ptBR }) : ""}`,
     });
     
     // Reset form
@@ -53,10 +54,10 @@ export function ReservationForm({ property }: ReservationFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4 animate-fade-in">
       <div className="space-y-2">
-        <Label htmlFor="name">Full Name</Label>
+        <Label htmlFor="name">Nome Completo</Label>
         <Input
           id="name"
-          placeholder="Enter your full name"
+          placeholder="Digite seu nome completo"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
@@ -68,7 +69,7 @@ export function ReservationForm({ property }: ReservationFormProps) {
         <Input
           id="email"
           type="email"
-          placeholder="Enter your email address"
+          placeholder="Digite seu endereço de email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -76,10 +77,10 @@ export function ReservationForm({ property }: ReservationFormProps) {
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="phone">Phone Number</Label>
+        <Label htmlFor="phone">Telefone</Label>
         <Input
           id="phone"
-          placeholder="Enter your phone number"
+          placeholder="Digite seu número de telefone"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           required
@@ -87,7 +88,7 @@ export function ReservationForm({ property }: ReservationFormProps) {
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="date">Preferred Date</Label>
+        <Label htmlFor="date">Data Preferida</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -95,11 +96,12 @@ export function ReservationForm({ property }: ReservationFormProps) {
               className="w-full justify-start text-left font-normal"
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, "PPP") : <span>Select your preferred date</span>}
+              {date ? format(date, "PPP", { locale: ptBR }) : <span>Selecione sua data preferida</span>}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
+              locale={ptBR}
               mode="single"
               selected={date}
               onSelect={setDate}
@@ -118,10 +120,10 @@ export function ReservationForm({ property }: ReservationFormProps) {
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="notes">Additional Notes</Label>
+        <Label htmlFor="notes">Observações Adicionais</Label>
         <Textarea
           id="notes"
-          placeholder="Any specific questions or requirements?"
+          placeholder="Alguma pergunta ou requisito específico?"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={4}
@@ -133,7 +135,7 @@ export function ReservationForm({ property }: ReservationFormProps) {
         className="w-full transition-all transform hover:translate-y-[-2px]"
         disabled={isSubmitting || !date}
       >
-        {isSubmitting ? "Submitting..." : "Request Viewing"}
+        {isSubmitting ? "Enviando..." : "Solicitar Visita"}
       </Button>
     </form>
   );

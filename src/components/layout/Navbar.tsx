@@ -112,15 +112,15 @@ export function Navbar({ toggleSidebar, isSidebarOpen }: NavbarProps) {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-10 w-10 rounded-full transition-all">
                       <Avatar className="h-9 w-9 transition-all">
-                        <AvatarImage src={user?.avatar} alt={user?.name} />
-                        <AvatarFallback>{user?.name.charAt(0)}</AvatarFallback>
+                        <AvatarImage src={user?.avatar} alt={user?.nome} />
+                        <AvatarFallback>{user?.nome.charAt(0)}</AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 glass">
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user?.name}</p>
+                        <p className="text-sm font-medium leading-none">{user?.nome}</p>
                         <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                         <span className="mt-1 text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5 capitalize">
                           {user?.role.replace("_", " ")}
@@ -132,17 +132,17 @@ export function Navbar({ toggleSidebar, isSidebarOpen }: NavbarProps) {
                       <Link to="/dashboard" className="cursor-pointer">Dashboard</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/profile" className="cursor-pointer">Profile</Link>
+                      <Link to="/profile" className="cursor-pointer">Perfil</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/settings" className="cursor-pointer">Settings</Link>
+                      <Link to="/settings" className="cursor-pointer">Configurações</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={logout}
                       className="text-red-500 cursor-pointer"
                     >
-                      Log out
+                      Sair
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -152,7 +152,7 @@ export function Navbar({ toggleSidebar, isSidebarOpen }: NavbarProps) {
             {!isAuthenticated && (
               <Link to="/login">
                 <Button className="transition-all transform hover:translate-y-[-2px]">
-                  Sign in
+                  Entrar
                 </Button>
               </Link>
             )}

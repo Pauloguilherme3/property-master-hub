@@ -7,26 +7,29 @@ import { useToast } from "@/components/ui/use-toast";
 const MOCK_USERS = [
   {
     id: "1",
-    name: "Agent User",
-    email: "agent@example.com",
+    nome: "Usuário Corretor",
+    name: "Usuário Corretor", // Adding English alias for compatibility
+    email: "corretor@example.com",
     password: "password",
-    role: UserRole.AGENT,
+    role: UserRole.CORRETOR,
     avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
   },
   {
     id: "2",
-    name: "Manager User",
-    email: "manager@example.com",
+    nome: "Usuário Gerente",
+    name: "Usuário Gerente", // Adding English alias for compatibility
+    email: "gerente@example.com",
     password: "password",
-    role: UserRole.MANAGER,
+    role: UserRole.GERENTE,
     avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
   },
   {
     id: "3",
-    name: "Admin User",
+    nome: "Usuário Administrador",
+    name: "Usuário Administrador", // Adding English alias for compatibility
     email: "admin@example.com",
     password: "password",
-    role: UserRole.ADMINISTRATOR,
+    role: UserRole.ADMINISTRADOR,
     avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
   }
 ];
@@ -65,19 +68,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (foundUser) {
       // Remove password before storing
       const { password: _, ...userWithoutPassword } = foundUser;
-      setUser(userWithoutPassword);
-      localStorage.setItem("user", JSON.stringify(userWithoutPassword));
+      // Explicitly setting as User type to ensure all required properties exist
+      const userToStore: User = {
+        id: userWithoutPassword.id,
+        nome: userWithoutPassword.nome,
+        email: userWithoutPassword.email,
+        role: userWithoutPassword.role,
+        avatar: userWithoutPassword.avatar,
+        name: userWithoutPassword.name // Add the name alias for compatibility
+      };
+      
+      setUser(userToStore);
+      localStorage.setItem("user", JSON.stringify(userToStore));
       toast({
-        title: "Login successful",
-        description: `Welcome back, ${foundUser.name}!`,
+        title: "Login bem-sucedido",
+        description: `Bem-vindo de volta, ${userToStore.nome}!`,
       });
     } else {
       toast({
-        title: "Login failed",
-        description: "Invalid email or password",
+        title: "Falha no login",
+        description: "E-mail ou senha inválidos",
         variant: "destructive",
       });
-      throw new Error("Invalid credentials");
+      throw new Error("Credenciais inválidas");
     }
     
     setIsLoading(false);
@@ -87,8 +100,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     localStorage.removeItem("user");
     toast({
-      title: "Logged out",
-      description: "You have been successfully logged out",
+      title: "Desconectado",
+      description: "Você foi desconectado com sucesso",
     });
   };
 
@@ -100,20 +113,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     
     // Admin always has access
-    if (user.role === UserRole.ADMINISTRATOR) return true;
+    if (user.role === UserRole.ADMINISTRADOR) return true;
     
     // Role hierarchy for other roles
     switch (requiredRole) {
+      case UserRole.CORRETOR:
       case UserRole.AGENT:
         return true; // All roles can access agent-level features
+      case UserRole.FUNCIONARIO:
       case UserRole.STAFF:
-        return user.role !== UserRole.AGENT;
+        return user.role !== UserRole.CORRETOR && user.role !== UserRole.AGENT;
+      case UserRole.GERENTE:
       case UserRole.MANAGER:
-        return [UserRole.MANAGER, UserRole.SUPERVISOR, UserRole.PRODUCT_MANAGER].includes(user.role);
+        return [UserRole.GERENTE, UserRole.SUPERVISOR, UserRole.GERENTE_PRODUTO].includes(user.role);
       case UserRole.SUPERVISOR:
-        return [UserRole.SUPERVISOR, UserRole.PRODUCT_MANAGER].includes(user.role);
+        return [UserRole.SUPERVISOR, UserRole.GERENTE_PRODUTO].includes(user.role);
+      case UserRole.GERENTE_PRODUTO:
       case UserRole.PRODUCT_MANAGER:
-        return user.role === UserRole.PRODUCT_MANAGER;
+        return user.role === UserRole.GERENTE_PRODUTO;
       default:
         return false;
     }

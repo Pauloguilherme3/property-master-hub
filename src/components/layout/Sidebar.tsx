@@ -63,7 +63,7 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
 
   const navItems: NavItem[] = [
     {
-      title: "Home",
+      title: "Início",
       href: "/",
       icon: Home
     },
@@ -73,61 +73,73 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
       icon: LayoutDashboard
     },
     {
-      title: "Properties",
-      href: "/properties",
+      title: "Empreendimentos",
+      href: "/empreendimentos",
       icon: Building,
-      badge: "New",
+      badge: "Novo",
       submenu: [
-        { title: "All Properties", href: "/properties" },
-        { title: "Add Property", href: "/properties/add", roles: [UserRole.MANAGER, UserRole.ADMINISTRATOR, UserRole.PRODUCT_MANAGER] },
-        { title: "Featured", href: "/properties/featured" },
-        { title: "Property Map", href: "/properties/map" }
+        { title: "Todos os Empreendimentos", href: "/empreendimentos" },
+        { 
+          title: "Adicionar Empreendimento", 
+          href: "/empreendimentos/adicionar", 
+          roles: [UserRole.GERENTE, UserRole.ADMINISTRADOR, UserRole.GERENTE_PRODUTO] 
+        },
+        { title: "Destaques", href: "/empreendimentos/destaques" },
+        { title: "Mapa de Empreendimentos", href: "/empreendimentos/mapa" }
       ]
     },
     {
-      title: "Reservations",
-      href: "/reservations",
+      title: "Reservas",
+      href: "/reservas",
       icon: Calendar,
       submenu: [
-        { title: "All Reservations", href: "/reservations" },
-        { title: "Calendar View", href: "/reservations/calendar" },
-        { title: "Schedule Visits", href: "/reservations/schedule" }
+        { title: "Todas as Reservas", href: "/reservas" },
+        { title: "Visualização de Calendário", href: "/reservas/calendario" },
+        { title: "Agendar Visitas", href: "/reservas/agendar" }
       ]
     },
     {
-      title: "Agents",
-      href: "/agents",
+      title: "Corretores",
+      href: "/corretores",
       icon: Users,
       submenu: [
-        { title: "All Agents", href: "/agents" },
-        { title: "Performance", href: "/agents/performance", roles: [UserRole.MANAGER, UserRole.SUPERVISOR, UserRole.ADMINISTRATOR] },
-        { title: "Lead Assignment", href: "/agents/leads", roles: [UserRole.MANAGER, UserRole.SUPERVISOR, UserRole.ADMINISTRATOR] }
+        { title: "Todos os Corretores", href: "/corretores" },
+        { 
+          title: "Desempenho", 
+          href: "/corretores/desempenho", 
+          roles: [UserRole.GERENTE, UserRole.SUPERVISOR, UserRole.ADMINISTRADOR] 
+        },
+        { 
+          title: "Atribuição de Leads", 
+          href: "/corretores/leads", 
+          roles: [UserRole.GERENTE, UserRole.SUPERVISOR, UserRole.ADMINISTRADOR] 
+        }
       ],
-      roles: [UserRole.AGENT, UserRole.MANAGER, UserRole.SUPERVISOR, UserRole.ADMINISTRATOR]
+      roles: [UserRole.CORRETOR, UserRole.GERENTE, UserRole.SUPERVISOR, UserRole.ADMINISTRADOR]
     },
     {
-      title: "Clients",
-      href: "/clients",
+      title: "Clientes",
+      href: "/clientes",
       icon: Users,
-      roles: [UserRole.AGENT, UserRole.MANAGER, UserRole.SUPERVISOR, UserRole.ADMINISTRATOR]
+      roles: [UserRole.CORRETOR, UserRole.GERENTE, UserRole.SUPERVISOR, UserRole.ADMINISTRADOR]
     },
     {
-      title: "Reports",
-      href: "/reports",
+      title: "Relatórios",
+      href: "/relatorios",
       icon: FileText,
-      roles: [UserRole.MANAGER, UserRole.SUPERVISOR, UserRole.PRODUCT_MANAGER, UserRole.ADMINISTRATOR]
+      roles: [UserRole.GERENTE, UserRole.SUPERVISOR, UserRole.GERENTE_PRODUTO, UserRole.ADMINISTRADOR]
     },
     {
       title: "Analytics",
       href: "/analytics",
       icon: BarChart3,
-      roles: [UserRole.MANAGER, UserRole.SUPERVISOR, UserRole.PRODUCT_MANAGER, UserRole.ADMINISTRATOR]
+      roles: [UserRole.GERENTE, UserRole.SUPERVISOR, UserRole.GERENTE_PRODUTO, UserRole.ADMINISTRADOR]
     },
     {
-      title: "Settings",
-      href: "/settings",
+      title: "Configurações",
+      href: "/configuracoes",
       icon: Settings,
-      roles: [UserRole.ADMINISTRATOR]
+      roles: [UserRole.ADMINISTRADOR]
     }
   ];
 
