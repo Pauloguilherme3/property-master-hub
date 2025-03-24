@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -19,7 +20,7 @@ export function LoginForm() {
     
     try {
       await login(email, password);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
       // Toast is already shown in the AuthContext
     } finally {
@@ -79,12 +80,7 @@ export function LoginForm() {
       </CardContent>
       <CardFooter className="flex flex-col space-y-4">
         <div className="text-sm text-muted-foreground text-center">
-          <span>Demo accounts:</span>
-          <ul className="mt-2 space-y-1">
-            <li><code>agent@example.com</code> / <code>password</code></li>
-            <li><code>manager@example.com</code> / <code>password</code></li>
-            <li><code>admin@example.com</code> / <code>password</code></li>
-          </ul>
+          <span>To test Firebase login, create an account in your Firebase project and enter the credentials here.</span>
         </div>
       </CardFooter>
     </Card>

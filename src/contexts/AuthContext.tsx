@@ -2,107 +2,113 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { User, UserRole, AuthContextType } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
-
-// Mock user data for demonstration
-const MOCK_USERS = [
-  {
-    id: "1",
-    nome: "Usuário Corretor",
-    name: "Usuário Corretor", // Adding English alias for compatibility
-    email: "corretor@example.com",
-    password: "password",
-    role: UserRole.CORRETOR,
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-  },
-  {
-    id: "2",
-    nome: "Usuário Gerente",
-    name: "Usuário Gerente", // Adding English alias for compatibility
-    email: "gerente@example.com",
-    password: "password",
-    role: UserRole.GERENTE,
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-  },
-  {
-    id: "3",
-    nome: "Usuário Administrador",
-    name: "Usuário Administrador", // Adding English alias for compatibility
-    email: "admin@example.com",
-    password: "password",
-    role: UserRole.ADMINISTRADOR,
-    avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-  }
-];
+import { onAuthChange, signIn as firebaseSignIn, signOut as firebaseSignOut } from "@/services/authService";
+import { getDocument, setDocument } from "@/services/dbService";
+import { User as FirebaseUser } from "firebase/auth";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Helper function to convert Firebase user to our User type
+const mapFirebaseUser = async (firebaseUser: FirebaseUser): Promise<User> => {
+  // Try to get user data from Firestore
+  const userData = await getDocument("users", firebaseUser.uid);
+  
+  // If user exists in Firestore, return that data
+  if (userData) {
+    return userData as User;
+  }
+  
+  // Default user data if not found in Firestore
+  const defaultUser: User = {
+    id: firebaseUser.uid,
+    nome: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "Usuário",
+    name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "User",
+    email: firebaseUser.email || "",
+    role: UserRole.CORRETOR, // Default role
+    avatar: firebaseUser.photoURL || "",
+  };
+  
+  // Save default user to Firestore
+  await setDocument("users", firebaseUser.uid, defaultUser);
+  
+  return defaultUser;
+};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { toast } = useToast();
 
-  // Check if user is already logged in
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (error) {
-        console.error("Failed to parse stored user:", error);
+    const unsubscribe = onAuthChange(async (firebaseUser) => {
+      setIsLoading(true);
+      
+      if (firebaseUser) {
+        try {
+          const userData = await mapFirebaseUser(firebaseUser);
+          setUser(userData);
+          localStorage.setItem("user", JSON.stringify(userData));
+        } catch (error) {
+          console.error("Error mapping user data:", error);
+          setUser(null);
+          localStorage.removeItem("user");
+        }
+      } else {
+        setUser(null);
         localStorage.removeItem("user");
       }
-    }
-    setIsLoading(false);
+      
+      setIsLoading(false);
+    });
+    
+    return () => unsubscribe();
   }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     
-    // Simulate API request
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const foundUser = MOCK_USERS.find(
-      u => u.email === email && u.password === password
-    );
-    
-    if (foundUser) {
-      // Remove password before storing
-      const { password: _, ...userWithoutPassword } = foundUser;
-      // Explicitly setting as User type to ensure all required properties exist
-      const userToStore: User = {
-        id: userWithoutPassword.id,
-        nome: userWithoutPassword.nome,
-        email: userWithoutPassword.email,
-        role: userWithoutPassword.role,
-        avatar: userWithoutPassword.avatar,
-        name: userWithoutPassword.name // Add the name alias for compatibility
-      };
+    try {
+      const firebaseUser = await firebaseSignIn(email, password);
+      const userData = await mapFirebaseUser(firebaseUser);
       
-      setUser(userToStore);
-      localStorage.setItem("user", JSON.stringify(userToStore));
+      setUser(userData);
+      localStorage.setItem("user", JSON.stringify(userData));
+      
       toast({
         title: "Login bem-sucedido",
-        description: `Bem-vindo de volta, ${userToStore.nome}!`,
+        description: `Bem-vindo de volta, ${userData.nome}!`,
       });
-    } else {
+      
+      return userData;
+    } catch (error: any) {
       toast({
         title: "Falha no login",
-        description: "E-mail ou senha inválidos",
+        description: error.message || "E-mail ou senha inválidos",
         variant: "destructive",
       });
-      throw new Error("Credenciais inválidas");
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
-    toast({
-      title: "Desconectado",
-      description: "Você foi desconectado com sucesso",
-    });
+  const logout = async () => {
+    try {
+      await firebaseSignOut();
+      setUser(null);
+      localStorage.removeItem("user");
+      
+      toast({
+        title: "Desconectado",
+        description: "Você foi desconectado com sucesso",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao desconectar",
+        description: error.message || "Ocorreu um erro ao tentar desconectar",
+        variant: "destructive",
+      });
+    }
   };
 
   const hasPermission = (requiredRole: UserRole | UserRole[]): boolean => {
