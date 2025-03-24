@@ -14,7 +14,10 @@ import LoginPage from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Properties from "./pages/Properties";
 import PropertyDetail from "./pages/PropertyDetail";
+import PropertyMap from "./pages/PropertyMap";
 import Reservations from "./pages/Reservations";
+import Agents from "./pages/Agents";
+import AgentPerformance from "./pages/AgentPerformance";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient();
@@ -111,10 +114,34 @@ const App = () => (
               } 
             />
             <Route 
+              path="/properties/map" 
+              element={
+                <AppLayout>
+                  <PropertyMap />
+                </AppLayout>
+              } 
+            />
+            <Route 
               path="/reservations" 
               element={
                 <AppLayout>
                   <Reservations />
+                </AppLayout>
+              } 
+            />
+            <Route 
+              path="/agents" 
+              element={
+                <AppLayout>
+                  <Agents />
+                </AppLayout>
+              } 
+            />
+            <Route 
+              path="/agents/performance" 
+              element={
+                <AppLayout>
+                  <AgentPerformance />
                 </AppLayout>
               } 
             />

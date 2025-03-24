@@ -13,7 +13,8 @@ import {
   FileText,
   BarChart3,
   Settings,
-  ChevronRight
+  ChevronRight,
+  LucideIcon
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -27,7 +28,7 @@ interface SidebarProps {
 interface NavItem {
   title: string;
   href: string;
-  icon: React.ComponentType<{ size?: number }>;
+  icon: LucideIcon;
   badge?: string;
   submenu?: Omit<NavItem, "icon" | "submenu">[];
   roles?: UserRole[];
@@ -79,7 +80,8 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
       submenu: [
         { title: "All Properties", href: "/properties" },
         { title: "Add Property", href: "/properties/add", roles: [UserRole.MANAGER, UserRole.ADMINISTRATOR, UserRole.PRODUCT_MANAGER] },
-        { title: "Featured", href: "/properties/featured" }
+        { title: "Featured", href: "/properties/featured" },
+        { title: "Property Map", href: "/properties/map" }
       ]
     },
     {
@@ -88,8 +90,20 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
       icon: Calendar,
       submenu: [
         { title: "All Reservations", href: "/reservations" },
-        { title: "Calendar View", href: "/reservations/calendar" }
+        { title: "Calendar View", href: "/reservations/calendar" },
+        { title: "Schedule Visits", href: "/reservations/schedule" }
       ]
+    },
+    {
+      title: "Agents",
+      href: "/agents",
+      icon: Users,
+      submenu: [
+        { title: "All Agents", href: "/agents" },
+        { title: "Performance", href: "/agents/performance", roles: [UserRole.MANAGER, UserRole.SUPERVISOR, UserRole.ADMINISTRATOR] },
+        { title: "Lead Assignment", href: "/agents/leads", roles: [UserRole.MANAGER, UserRole.SUPERVISOR, UserRole.ADMINISTRATOR] }
+      ],
+      roles: [UserRole.AGENT, UserRole.MANAGER, UserRole.SUPERVISOR, UserRole.ADMINISTRATOR]
     },
     {
       title: "Clients",
