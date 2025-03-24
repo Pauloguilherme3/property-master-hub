@@ -1,4 +1,3 @@
-
 import { UserRole, Property, Reservation } from "@/types";
 
 export const formatCurrency = (value: number): string => {
@@ -111,6 +110,7 @@ export const mockReservations: Reservation[] = [
     endDate: "2023-06-20T15:30:00Z",
     status: "confirmed",
     notes: "Client is interested in making an offer if the viewing goes well",
+    visitType: "in_person",
     createdAt: "2023-06-15T10:30:00Z",
     createdBy: "agent1"
   },
@@ -123,6 +123,7 @@ export const mockReservations: Reservation[] = [
     startDate: "2023-06-22T10:00:00Z",
     endDate: "2023-06-22T11:30:00Z",
     status: "pending",
+    visitType: "virtual",
     createdAt: "2023-06-16T15:45:00Z",
     createdBy: "agent2"
   },
@@ -136,6 +137,7 @@ export const mockReservations: Reservation[] = [
     endDate: "2023-06-25T14:30:00Z",
     status: "confirmed",
     notes: "Client is relocating from out of state, this is their only viewing opportunity",
+    visitType: "in_person",
     createdAt: "2023-06-18T09:15:00Z",
     createdBy: "agent1"
   }
