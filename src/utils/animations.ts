@@ -1,3 +1,4 @@
+
 import { UserRole, Property, Reservation } from "@/types";
 
 export const formatCurrency = (value: number): string => {
