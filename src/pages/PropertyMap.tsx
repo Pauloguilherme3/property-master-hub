@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
@@ -15,12 +16,12 @@ import {
   Search,
   List
 } from "lucide-react";
-import { Property } from "@/types";
+import { Empreendimento } from "@/types";
 import { PropertyCard } from "@/components/ui/PropertyCard";
 import { useToast } from "@/components/ui/use-toast";
 
 // Mock properties with coordinates
-const sampleProperties = [
+const sampleProperties: Empreendimento[] = [
   {
     id: "1",
     nome: "Edifício Aurora",
@@ -30,7 +31,7 @@ const sampleProperties = [
     estado: "SC",
     preco: 750000,
     coordenadas: { lat: -27.595417, lng: -48.548361 },
-    status: "disponivel",
+    status: "disponivel" as const,
     imagens: ["https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"],
     cep: "88000-000",
     construtora: "Construtora Exemplo",
@@ -53,7 +54,7 @@ const sampleProperties = [
     estado: "RS",
     preco: 950000,
     coordenadas: { lat: -29.373464, lng: -50.876490 },
-    status: "disponivel",
+    status: "disponivel" as const,
     imagens: ["https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"],
     cep: "95670-000",
     construtora: "Construtora Exemplo",
@@ -76,7 +77,7 @@ const sampleProperties = [
     estado: "MG",
     preco: 320000,
     coordenadas: { lat: -19.917854, lng: -43.934450 },
-    status: "disponivel",
+    status: "disponivel" as const,
     imagens: ["https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"],
     cep: "30000-000",
     construtora: "Construtora Exemplo",
