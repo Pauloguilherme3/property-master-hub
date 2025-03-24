@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,20 +10,20 @@ import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Calendar as CalendarIcon, Search, Filter, Eye, CheckCircle, XCircle, Clock } from "lucide-react";
-import { mockProperties, mockReservations } from "@/utils/animations";
-import { Reservation } from "@/types";
+import { mockEmpreendimentos as mockProperties, mockReservas as mockReservations } from "@/utils/animations";
+import { Reserva } from "@/types";
 
-const ReservationsPage = () => {
+const ReservasPage = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("list");
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [filteredReservations, setFilteredReservations] = useState<Reservation[]>([]);
+  const [activeTab, setActiveTab] = useState("lista");
+  const [reservas, setReservas] = useState<Reserva[]>([]);
+  const [reservasFiltradas, setReservasFiltradas] = useState<Reserva[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("todos");
   
-  // Redirect if not authenticated
+  // Redirecionar se não estiver autenticado
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login");
@@ -32,80 +31,53 @@ const ReservationsPage = () => {
   }, [isAuthenticated, navigate]);
 
   useEffect(() => {
-    // Initialize reservations with property data
-    const enhancedReservations = mockReservations.map(reservation => ({
-      ...reservation,
-      property: mockProperties.find(p => p.id === reservation.propertyId)
+    // Inicializar reservas com dados do empreendimento e unidade
+    const reservasCompletas = mockReservas.map(reserva => ({
+      ...reserva,
+      empreendimento: mockProperties.find(e => e.id === reserva.empreendimentoId),
+      unidade: mockUnidades.find(u => u.id === reserva.unidadeId)
     }));
     
-    setReservations(enhancedReservations);
-    setFilteredReservations(enhancedReservations);
+    setReservas(reservasCompletas);
+    setReservasFiltradas(reservasCompletas);
   }, []);
 
   useEffect(() => {
-    filterReservations();
-  }, [searchTerm, statusFilter, selectedDate, reservations]);
+    filtrarReservas();
+  }, [searchTerm, statusFilter, selectedDate, reservas]);
 
-  const filterReservations = () => {
-    let filtered = [...reservations];
+  const filtrarReservas = () => {
+    let filtradas = [...reservas];
     
-    // Apply search term filter
+    // Aplicar filtro de termo de busca
     if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(reservation => 
-        reservation.clientName.toLowerCase().includes(term) ||
-        reservation.clientEmail.toLowerCase().includes(term) ||
-        reservation.property?.title.toLowerCase().includes(term) ||
-        reservation.property?.address.toLowerCase().includes(term)
+      const termo = searchTerm.toLowerCase();
+      filtradas = filtradas.filter(reserva => 
+        reserva.nomeCliente.toLowerCase().includes(termo) ||
+        reserva.emailCliente.toLowerCase().includes(termo) ||
+        reserva.empreendimento?.nome.toLowerCase().includes(termo) ||
+        reserva.empreendimento?.endereco.toLowerCase().includes(termo)
       );
     }
     
-    // Apply status filter
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(reservation => reservation.status === statusFilter);
+    // Aplicar filtro de status
+    if (statusFilter !== "todos") {
+      filtradas = filtradas.filter(reserva => reserva.status === statusFilter);
     }
     
-    // Apply date filter
+    // Aplicar filtro de data
     if (selectedDate) {
-      filtered = filtered.filter(reservation => {
-        const reservationDate = new Date(reservation.startDate);
+      filtradas = filtradas.filter(reserva => {
+        const dataReserva = new Date(reserva.dataInicio);
         return (
-          reservationDate.getDate() === selectedDate.getDate() &&
-          reservationDate.getMonth() === selectedDate.getMonth() &&
-          reservationDate.getFullYear() === selectedDate.getFullYear()
+          dataReserva.getDate() === selectedDate.getDate() &&
+          dataReserva.getMonth() === selectedDate.getMonth() &&
+          dataReserva.getFullYear() === selectedDate.getFullYear()
         );
       });
     }
     
-    setFilteredReservations(filtered);
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "confirmed":
-        return (
-          <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Confirmed
-          </Badge>
-        );
-      case "pending":
-        return (
-          <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
-            <Clock className="h-3 w-3 mr-1" />
-            Pending
-          </Badge>
-        );
-      case "cancelled":
-        return (
-          <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-            <XCircle className="h-3 w-3 mr-1" />
-            Cancelled
-          </Badge>
-        );
-      default:
-        return null;
-    }
+    setReservasFiltradas(filtradas);
   };
 
   if (!user) return null;
@@ -114,30 +86,30 @@ const ReservationsPage = () => {
     <div className="container px-4 mx-auto py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">
-          Reservations
+          Reservas
         </h1>
         <p className="text-muted-foreground">
-          Manage and view all property reservations.
+          Gerencie e visualize todas as reservas de imóveis.
         </p>
       </div>
       
       <Tabs
-        defaultValue="list"
+        defaultValue="lista"
         value={activeTab}
         onValueChange={setActiveTab}
         className="space-y-4"
       >
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <TabsList>
-            <TabsTrigger value="list">List View</TabsTrigger>
-            <TabsTrigger value="calendar">Calendar View</TabsTrigger>
+            <TabsTrigger value="lista">Visualização em Lista</TabsTrigger>
+            <TabsTrigger value="calendario">Visualização em Calendário</TabsTrigger>
           </TabsList>
           
           <div className="flex w-full sm:w-auto gap-2">
             <div className="relative flex-1 sm:flex-initial">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
               <Input
-                placeholder="Search reservations..."
+                placeholder="Buscar reservas..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9 w-full sm:w-[200px]"
@@ -150,58 +122,58 @@ const ReservationsPage = () => {
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="confirmed">Confirmed</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectItem value="todos">Todos</SelectItem>
+                <SelectItem value="confirmada">Confirmada</SelectItem>
+                <SelectItem value="pendente">Pendente</SelectItem>
+                <SelectItem value="cancelada">Cancelada</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
         
-        <TabsContent value="list" className="space-y-4">
+        <TabsContent value="lista" className="space-y-4">
           <Card>
             <CardContent className="p-0">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Property</TableHead>
-                    <TableHead>Date & Time</TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Empreendimento</TableHead>
+                    <TableHead>Data e Hora</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredReservations.length > 0 ? (
-                    filteredReservations.map((reservation) => (
-                      <TableRow key={reservation.id}>
+                  {reservasFiltradas.length > 0 ? (
+                    reservasFiltradas.map((reserva) => (
+                      <TableRow key={reserva.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{reservation.clientName}</p>
-                            <p className="text-sm text-muted-foreground">{reservation.clientEmail}</p>
+                            <p className="font-medium">{reserva.nomeCliente}</p>
+                            <p className="text-sm text-muted-foreground">{reserva.emailCliente}</p>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div>
-                            <p className="font-medium">{reservation.property?.title || "Unknown Property"}</p>
+                            <p className="font-medium">{reserva.empreendimento?.nome || "Empreendimento Desconhecido"}</p>
                             <p className="text-sm text-muted-foreground truncate max-w-[200px]">
-                              {reservation.property?.address || ""}, {reservation.property?.city || ""}
+                              {reserva.empreendimento?.endereco || ""}, {reserva.empreendimento?.cidade || ""}
                             </p>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div>
                             <p className="font-medium">
-                              {new Date(reservation.startDate).toLocaleDateString()}
+                              {new Date(reserva.dataInicio).toLocaleDateString()}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {new Date(reservation.startDate).toLocaleTimeString([], {
+                              {new Date(reserva.dataInicio).toLocaleTimeString([], {
                                 hour: "2-digit",
                                 minute: "2-digit"
                               })}
                               {" - "}
-                              {new Date(reservation.endDate).toLocaleTimeString([], {
+                              {new Date(reserva.dataFim).toLocaleTimeString([], {
                                 hour: "2-digit",
                                 minute: "2-digit"
                               })}
@@ -209,7 +181,12 @@ const ReservationsPage = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          {getStatusBadge(reservation.status)}
+                          <Badge className={getStatusReserva(reserva.status).color}>
+                            {reserva.status === "confirmada" && <CheckCircle className="h-3 w-3 mr-1" />}
+                            {reserva.status === "pendente" && <Clock className="h-3 w-3 mr-1" />}
+                            {reserva.status === "cancelada" && <XCircle className="h-3 w-3 mr-1" />}
+                            {getStatusReserva(reserva.status).label}
+                          </Badge>
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end">
@@ -218,9 +195,9 @@ const ReservationsPage = () => {
                               size="icon"
                               asChild
                             >
-                              <Link to={`/properties/${reservation.propertyId}`}>
+                              <Link to={`/empreendimentos/${reserva.empreendimentoId}`}>
                                 <Eye className="h-4 w-4" />
-                                <span className="sr-only">View property</span>
+                                <span className="sr-only">Ver empreendimento</span>
                               </Link>
                             </Button>
                           </div>
@@ -232,11 +209,11 @@ const ReservationsPage = () => {
                       <TableCell colSpan={5} className="text-center py-10">
                         <div className="flex flex-col items-center justify-center text-muted-foreground">
                           <CalendarIcon className="h-10 w-10 mb-2" />
-                          <p className="text-lg font-medium">No reservations found</p>
+                          <p className="text-lg font-medium">Nenhuma reserva encontrada</p>
                           <p className="text-sm">
-                            {searchTerm || statusFilter !== "all" || selectedDate
-                              ? "Try adjusting your filters"
-                              : "No reservations have been scheduled yet"}
+                            {searchTerm || statusFilter !== "todos" || selectedDate
+                              ? "Tente ajustar seus filtros"
+                              : "Nenhuma reserva foi agendada ainda"}
                           </p>
                         </div>
                       </TableCell>
@@ -248,12 +225,12 @@ const ReservationsPage = () => {
           </Card>
         </TabsContent>
         
-        <TabsContent value="calendar" className="space-y-4">
+        <TabsContent value="calendario" className="space-y-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle>Reservation Calendar</CardTitle>
+              <CardTitle>Calendário de Reservas</CardTitle>
               <CardDescription>
-                View and manage reservations by date
+                Visualize e gerencie reservas por data
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -271,52 +248,57 @@ const ReservationsPage = () => {
                 <div>
                   <h3 className="font-medium text-lg mb-3">
                     {selectedDate ? (
-                      `Reservations for ${selectedDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`
+                      `Reservas para ${selectedDate.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`
                     ) : (
-                      "Select a date to view reservations"
+                      "Selecione uma data para ver as reservas"
                     )}
                   </h3>
                   
-                  {filteredReservations.length > 0 ? (
+                  {reservasFiltradas.length > 0 ? (
                     <div className="space-y-3">
-                      {filteredReservations.map(reservation => (
-                        <Card key={reservation.id} className="hover-card">
+                      {reservasFiltradas.map(reserva => (
+                        <Card key={reserva.id} className="hover-card">
                           <CardContent className="p-4">
                             <div className="flex items-center justify-between mb-2">
                               <div className="font-medium">
-                                {new Date(reservation.startDate).toLocaleTimeString([], {
+                                {new Date(reserva.dataInicio).toLocaleTimeString([], {
                                   hour: "2-digit",
                                   minute: "2-digit"
                                 })}
                                 {" - "}
-                                {new Date(reservation.endDate).toLocaleTimeString([], {
+                                {new Date(reserva.dataFim).toLocaleTimeString([], {
                                   hour: "2-digit",
                                   minute: "2-digit"
                                 })}
                               </div>
-                              {getStatusBadge(reservation.status)}
+                              <Badge className={getStatusReserva(reserva.status).color}>
+                                {reserva.status === "confirmada" && <CheckCircle className="h-3 w-3 mr-1" />}
+                                {reserva.status === "pendente" && <Clock className="h-3 w-3 mr-1" />}
+                                {reserva.status === "cancelada" && <XCircle className="h-3 w-3 mr-1" />}
+                                {getStatusReserva(reserva.status).label}
+                              </Badge>
                             </div>
                             
                             <div className="flex items-center gap-3 mb-3">
                               <div className="h-10 w-10 rounded-md overflow-hidden flex-shrink-0">
                                 <img
-                                  src={reservation.property?.images[0] || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"}
-                                  alt={reservation.property?.title || "Property"}
+                                  src={reserva.empreendimento?.imagens[0] || "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"}
+                                  alt={reserva.empreendimento?.nome || "Empreendimento"}
                                   className="h-full w-full object-cover"
                                 />
                               </div>
                               <div>
-                                <p className="font-medium">{reservation.property?.title || "Unknown Property"}</p>
+                                <p className="font-medium">{reserva.empreendimento?.nome || "Empreendimento Desconhecido"}</p>
                                 <p className="text-sm text-muted-foreground">
-                                  {reservation.property?.address || ""}, {reservation.property?.city || ""}
+                                  {reserva.empreendimento?.endereco || ""}, {reserva.empreendimento?.cidade || ""}
                                 </p>
                               </div>
                             </div>
                             
                             <div className="flex items-center justify-between text-sm text-muted-foreground">
                               <div>
-                                <p><span className="font-medium">Client:</span> {reservation.clientName}</p>
-                                <p>{reservation.clientEmail}</p>
+                                <p><span className="font-medium">Cliente:</span> {reserva.nomeCliente}</p>
+                                <p>{reserva.emailCliente}</p>
                               </div>
                               
                               <Button
@@ -324,16 +306,16 @@ const ReservationsPage = () => {
                                 size="sm"
                                 asChild
                               >
-                                <Link to={`/properties/${reservation.propertyId}`}>
-                                  View Property
+                                <Link to={`/empreendimentos/${reserva.empreendimentoId}`}>
+                                  Ver Empreendimento
                                 </Link>
                               </Button>
                             </div>
                             
-                            {reservation.notes && (
+                            {reserva.observacoes && (
                               <div className="mt-3 pt-3 border-t text-sm">
-                                <p className="font-medium mb-1">Notes:</p>
-                                <p className="text-muted-foreground">{reservation.notes}</p>
+                                <p className="font-medium mb-1">Observações:</p>
+                                <p className="text-muted-foreground">{reserva.observacoes}</p>
                               </div>
                             )}
                           </CardContent>
@@ -344,9 +326,9 @@ const ReservationsPage = () => {
                     <Card>
                       <CardContent className="flex flex-col items-center justify-center py-12">
                         <CalendarIcon className="h-10 w-10 text-muted-foreground mb-2" />
-                        <p className="text-lg font-medium">No reservations found</p>
+                        <p className="text-lg font-medium">Nenhuma reserva encontrada</p>
                         <p className="text-sm text-muted-foreground">
-                          There are no reservations scheduled for this date
+                          Não há reservas agendadas para esta data
                         </p>
                       </CardContent>
                     </Card>
@@ -361,4 +343,4 @@ const ReservationsPage = () => {
   );
 };
 
-export default ReservationsPage;
+export default ReservasPage;

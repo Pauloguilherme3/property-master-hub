@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { mockProperties } from "@/utils/animations";
+import { mockEmpreendimentos as mockProperties } from "@/utils/animations";
 import { Building, Search, Plus, SlidersHorizontal, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -31,7 +30,6 @@ const Properties = () => {
   const bedroomOptions = [1, 2, 3, 4, 5];
   const bathroomOptions = [1, 2, 3, 4, 5];
 
-  // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login");
@@ -76,7 +74,6 @@ const Properties = () => {
     setFeaturedOnly(false);
   };
 
-  // Apply filters and sorting
   const filteredProperties = properties
     .filter(property => {
       const matchesSearch = 
@@ -165,7 +162,6 @@ const Properties = () => {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Filters - Desktop */}
         <Card className="lg:block hidden">
           <CardHeader className="pb-3">
             <CardTitle>Filters</CardTitle>
@@ -265,7 +261,6 @@ const Properties = () => {
         </Card>
         
         <div className="lg:col-span-3 space-y-6">
-          {/* Search and filters - Mobile & Desktop */}
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
@@ -308,191 +303,184 @@ const Properties = () => {
             </div>
           </div>
           
-          {/* Mobile Filters Dialog */}
-          {showFilters && (
-            <Card className="lg:hidden">
-              <CardHeader className="pb-3 flex flex-row items-center justify-between">
-                <CardTitle>Filters</CardTitle>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowFilters(false)}
-                >
-                  <X size={18} />
-                </Button>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="font-medium mb-2">Status</h3>
-                    <Select value={statusFilter} onValueChange={handleStatusChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectItem value="all">All Properties</SelectItem>
-                          <SelectItem value="available">Available</SelectItem>
-                          <SelectItem value="reserved">Reserved</SelectItem>
-                          <SelectItem value="sold">Sold</SelectItem>
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-medium mb-2">Price Range</h3>
-                    <div className="px-2">
-                      <Slider
-                        value={priceRange}
-                        min={0}
-                        max={2000000}
-                        step={10000}
-                        onValueChange={setPriceRange}
-                        className="my-5"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <div>{formatPrice(priceRange[0])}</div>
-                      <div>{formatPrice(priceRange[1])}</div>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="font-medium mb-2">Bedrooms</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {bedroomOptions.map(num => (
-                          <div key={`mob-bed-${num}`} className="flex items-center space-x-2">
-                            <Checkbox 
-                              id={`mob-bed-${num}`} 
-                              checked={bedroomsFilter.includes(num)}
-                              onCheckedChange={() => toggleBedroomFilter(num)}
-                            />
-                            <Label htmlFor={`mob-bed-${num}`}>{num}+</Label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <h3 className="font-medium mb-2">Bathrooms</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {bathroomOptions.map(num => (
-                          <div key={`mob-bath-${num}`} className="flex items-center space-x-2">
-                            <Checkbox 
-                              id={`mob-bath-${num}`} 
-                              checked={bathroomsFilter.includes(num)}
-                              onCheckedChange={() => toggleBathroomFilter(num)}
-                            />
-                            <Label htmlFor={`mob-bath-${num}`}>{num}+</Label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="mob-featured" 
-                        checked={featuredOnly}
-                        onCheckedChange={(checked) => setFeaturedOnly(!!checked)}
-                      />
-                      <Label htmlFor="mob-featured">Featured properties only</Label>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <Button 
-                      variant="outline" 
-                      onClick={resetFilters}
-                    >
-                      Reset Filters
-                    </Button>
-                    <Button 
-                      onClick={() => setShowFilters(false)}
-                    >
-                      Apply Filters
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-          
-          {/* Active filters display */}
-          {activeFilterCount > 0 && (
-            <div className="flex flex-wrap gap-2 items-center">
-              <span className="text-sm font-medium">Active filters:</span>
-              
-              {statusFilter !== "all" && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  Status: {statusFilter}
-                  <X
-                    size={14}
-                    className="cursor-pointer"
-                    onClick={() => setStatusFilter("all")}
-                  />
-                </Badge>
-              )}
-              
-              {bedroomsFilter.length > 0 && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  Bedrooms: {bedroomsFilter.sort().join(", ")}
-                  <X
-                    size={14}
-                    className="cursor-pointer"
-                    onClick={() => setBedroomsFilter([])}
-                  />
-                </Badge>
-              )}
-              
-              {bathroomsFilter.length > 0 && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  Bathrooms: {bathroomsFilter.sort().join(", ")}
-                  <X
-                    size={14}
-                    className="cursor-pointer"
-                    onClick={() => setBathroomsFilter([])}
-                  />
-                </Badge>
-              )}
-              
-              {(priceRange[0] > 0 || priceRange[1] < 2000000) && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  Price: {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
-                  <X
-                    size={14}
-                    className="cursor-pointer"
-                    onClick={() => setPriceRange([0, 2000000])}
-                  />
-                </Badge>
-              )}
-              
-              {featuredOnly && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  Featured only
-                  <X
-                    size={14}
-                    className="cursor-pointer"
-                    onClick={() => setFeaturedOnly(false)}
-                  />
-                </Badge>
-              )}
-              
+          <Card className="lg:hidden">
+            <CardHeader className="pb-3 flex flex-row items-center justify-between">
+              <CardTitle>Filters</CardTitle>
               <Button
                 variant="ghost"
-                size="sm"
-                onClick={resetFilters}
-                className="text-xs h-8 px-2"
+                size="icon"
+                onClick={() => setShowFilters(false)}
               >
-                Clear all
+                <X size={18} />
               </Button>
-            </div>
-          )}
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="font-medium mb-2">Status</h3>
+                  <Select value={statusFilter} onValueChange={handleStatusChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="all">All Properties</SelectItem>
+                        <SelectItem value="available">Available</SelectItem>
+                        <SelectItem value="reserved">Reserved</SelectItem>
+                        <SelectItem value="sold">Sold</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <h3 className="font-medium mb-2">Price Range</h3>
+                  <div className="px-2">
+                    <Slider
+                      value={priceRange}
+                      min={0}
+                      max={2000000}
+                      step={10000}
+                      onValueChange={setPriceRange}
+                      className="my-5"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <div>{formatPrice(priceRange[0])}</div>
+                    <div>{formatPrice(priceRange[1])}</div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="font-medium mb-2">Bedrooms</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {bedroomOptions.map(num => (
+                        <div key={`mob-bed-${num}`} className="flex items-center space-x-2">
+                          <Checkbox 
+                            id={`mob-bed-${num}`} 
+                            checked={bedroomsFilter.includes(num)}
+                            onCheckedChange={() => toggleBedroomFilter(num)}
+                          />
+                          <Label htmlFor={`mob-bed-${num}`}>{num}+</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-medium mb-2">Bathrooms</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {bathroomOptions.map(num => (
+                        <div key={`mob-bath-${num}`} className="flex items-center space-x-2">
+                          <Checkbox 
+                            id={`mob-bath-${num}`} 
+                            checked={bathroomsFilter.includes(num)}
+                            onCheckedChange={() => toggleBathroomFilter(num)}
+                          />
+                          <Label htmlFor={`mob-bath-${num}`}>{num}+</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="mob-featured" 
+                      checked={featuredOnly}
+                      onCheckedChange={(checked) => setFeaturedOnly(!!checked)}
+                    />
+                    <Label htmlFor="mob-featured">Featured properties only</Label>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={resetFilters}
+                  >
+                    Reset Filters
+                  </Button>
+                  <Button 
+                    onClick={() => setShowFilters(false)}
+                  >
+                    Apply Filters
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
           
-          {/* Properties grid */}
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-sm font-medium">Active filters:</span>
+            
+            {statusFilter !== "all" && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                Status: {statusFilter}
+                <X
+                  size={14}
+                  className="cursor-pointer"
+                  onClick={() => setStatusFilter("all")}
+                />
+              </Badge>
+            )}
+            
+            {bedroomsFilter.length > 0 && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                Bedrooms: {bedroomsFilter.sort().join(", ")}
+                <X
+                  size={14}
+                  className="cursor-pointer"
+                  onClick={() => setBedroomsFilter([])}
+                />
+              </Badge>
+            )}
+            
+            {bathroomsFilter.length > 0 && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                Bathrooms: {bathroomsFilter.sort().join(", ")}
+                <X
+                  size={14}
+                  className="cursor-pointer"
+                  onClick={() => setBathroomsFilter([])}
+                />
+              </Badge>
+            )}
+            
+            {(priceRange[0] > 0 || priceRange[1] < 2000000) && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                Price: {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
+                <X
+                  size={14}
+                  className="cursor-pointer"
+                  onClick={() => setPriceRange([0, 2000000])}
+                />
+              </Badge>
+            )}
+            
+            {featuredOnly && (
+              <Badge variant="secondary" className="flex items-center gap-1">
+                Featured only
+                <X
+                  size={14}
+                  className="cursor-pointer"
+                  onClick={() => setFeaturedOnly(false)}
+                />
+              </Badge>
+            )}
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetFilters}
+              className="text-xs h-8 px-2"
+            >
+              Clear all
+            </Button>
+          </div>
+          
           {filteredProperties.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredProperties.map(property => (

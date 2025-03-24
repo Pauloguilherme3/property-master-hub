@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { User, UserRole, AuthContextType } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
@@ -105,35 +104,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  const hasPermission = (requiredRole: UserRole | UserRole[]) => {
+  const hasPermission = (requiredRole: UserRole | UserRole[]): boolean => {
     if (!user) return false;
     
     if (Array.isArray(requiredRole)) {
-      return requiredRole.includes(user.role);
+      return requiredRole.some(role => user.role === role);
     }
     
-    // Admin always has access
-    if (user.role === UserRole.ADMINISTRADOR) return true;
-    
-    // Role hierarchy for other roles
-    switch (requiredRole) {
-      case UserRole.CORRETOR:
-      case UserRole.AGENT:
-        return true; // All roles can access agent-level features
-      case UserRole.FUNCIONARIO:
-      case UserRole.STAFF:
-        return user.role !== UserRole.CORRETOR && user.role !== UserRole.AGENT;
-      case UserRole.GERENTE:
-      case UserRole.MANAGER:
-        return [UserRole.GERENTE, UserRole.SUPERVISOR, UserRole.GERENTE_PRODUTO].includes(user.role);
-      case UserRole.SUPERVISOR:
-        return [UserRole.SUPERVISOR, UserRole.GERENTE_PRODUTO].includes(user.role);
-      case UserRole.GERENTE_PRODUTO:
-      case UserRole.PRODUCT_MANAGER:
-        return user.role === UserRole.GERENTE_PRODUTO;
-      default:
-        return false;
-    }
+    return user.role === requiredRole;
   };
 
   return (

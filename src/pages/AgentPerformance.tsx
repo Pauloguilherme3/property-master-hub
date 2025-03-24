@@ -51,8 +51,17 @@ const mockAgents = [
   }
 ];
 
-const mockPerformanceData: AgentPerformanceType[] = [
+const mockPerformanceData: DesempenhoCorretor[] = [
   {
+    corretorId: "1",
+    periodo: "Jan 2024",
+    leadsAtribuidos: 28,
+    leadsConvertidos: 8,
+    imoveisVendidos: 3,
+    receita: 45000,
+    satisfacaoCliente: 4.7,
+    tempoResposta: 2.3,
+    // English aliases for compatibility
     agentId: "1",
     period: "Jan 2024",
     leadsAssigned: 28,
@@ -63,6 +72,15 @@ const mockPerformanceData: AgentPerformanceType[] = [
     responseTime: 2.3
   },
   {
+    corretorId: "1",
+    periodo: "Feb 2024",
+    leadsAtribuidos: 32,
+    leadsConvertidos: 10,
+    imoveisVendidos: 4,
+    receita: 62000,
+    satisfacaoCliente: 4.8,
+    tempoResposta: 2.1,
+    // English aliases
     agentId: "1",
     period: "Feb 2024",
     leadsAssigned: 32,
@@ -73,6 +91,15 @@ const mockPerformanceData: AgentPerformanceType[] = [
     responseTime: 2.1
   },
   {
+    corretorId: "1",
+    periodo: "Mar 2024",
+    leadsAtribuidos: 35,
+    leadsConvertidos: 12,
+    imoveisVendidos: 5,
+    receita: 78000,
+    satisfacaoCliente: 4.9,
+    tempoResposta: 1.8,
+    // English aliases
     agentId: "1",
     period: "Mar 2024",
     leadsAssigned: 35,
@@ -83,6 +110,15 @@ const mockPerformanceData: AgentPerformanceType[] = [
     responseTime: 1.8
   },
   {
+    corretorId: "2",
+    periodo: "Jan 2024",
+    leadsAtribuidos: 18,
+    leadsConvertidos: 4,
+    imoveisVendidos: 1,
+    receita: 18000,
+    satisfacaoCliente: 4.2,
+    tempoResposta: 3.5,
+    // English aliases
     agentId: "2",
     period: "Jan 2024",
     leadsAssigned: 18,
@@ -93,6 +129,15 @@ const mockPerformanceData: AgentPerformanceType[] = [
     responseTime: 3.5
   },
   {
+    corretorId: "2",
+    periodo: "Feb 2024",
+    leadsAtribuidos: 22,
+    leadsConvertidos: 6,
+    imoveisVendidos: 2,
+    receita: 35000,
+    satisfacaoCliente: 4.5,
+    tempoResposta: 3.0,
+    // English aliases
     agentId: "2",
     period: "Feb 2024",
     leadsAssigned: 22,
@@ -103,6 +148,15 @@ const mockPerformanceData: AgentPerformanceType[] = [
     responseTime: 3.0
   },
   {
+    corretorId: "2",
+    periodo: "Mar 2024",
+    leadsAtribuidos: 25,
+    leadsConvertidos: 8,
+    imoveisVendidos: 3,
+    receita: 47000,
+    satisfacaoCliente: 4.6,
+    tempoResposta: 2.8,
+    // English aliases
     agentId: "2",
     period: "Mar 2024",
     leadsAssigned: 25,
@@ -113,6 +167,15 @@ const mockPerformanceData: AgentPerformanceType[] = [
     responseTime: 2.8
   },
   {
+    corretorId: "3",
+    periodo: "Jan 2024",
+    leadsAtribuidos: 38,
+    leadsConvertidos: 15,
+    imoveisVendidos: 6,
+    receita: 95000,
+    satisfacaoCliente: 4.9,
+    tempoResposta: 1.5,
+    // English aliases
     agentId: "3",
     period: "Jan 2024",
     leadsAssigned: 38,
@@ -123,6 +186,15 @@ const mockPerformanceData: AgentPerformanceType[] = [
     responseTime: 1.5
   },
   {
+    corretorId: "3",
+    periodo: "Feb 2024",
+    leadsAtribuidos: 42,
+    leadsConvertidos: 18,
+    imoveisVendidos: 8,
+    receita: 125000,
+    satisfacaoCliente: 4.9,
+    tempoResposta: 1.3,
+    // English aliases
     agentId: "3",
     period: "Feb 2024",
     leadsAssigned: 42,
@@ -133,6 +205,15 @@ const mockPerformanceData: AgentPerformanceType[] = [
     responseTime: 1.3
   },
   {
+    corretorId: "3",
+    periodo: "Mar 2024",
+    leadsAtribuidos: 45,
+    leadsConvertidos: 20,
+    imoveisVendidos: 9,
+    receita: 142000,
+    satisfacaoCliente: 5.0,
+    tempoResposta: 1.2,
+    // English aliases
     agentId: "3",
     period: "Mar 2024",
     leadsAssigned: 45,

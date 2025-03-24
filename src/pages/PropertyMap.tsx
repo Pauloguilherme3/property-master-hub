@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
@@ -21,79 +20,46 @@ import { PropertyCard } from "@/components/ui/PropertyCard";
 import { useToast } from "@/components/ui/use-toast";
 
 // Mock properties with coordinates
-const mockProperties: Property[] = [
+const sampleProperties = [
   {
-    id: "prop001",
-    title: "Modern Downtown Apartment",
-    description: "Beautiful apartment in the heart of downtown with amazing city views.",
-    price: 450000,
-    address: "123 Main Street",
-    city: "San Francisco",
-    state: "CA",
-    zipCode: "94105",
-    bedrooms: 2,
-    bathrooms: 2,
-    area: 1200,
-    images: ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"],
-    featured: true,
-    status: "available",
-    coordinates: {
-      lat: 37.7749,
-      lng: -122.4194
-    },
-    amenities: ["Parking", "Gym", "Pool", "Doorman"],
-    createdAt: "2023-04-15T10:00:00Z",
-    updatedAt: "2023-04-15T10:00:00Z",
-    createdBy: "user1"
+    id: "1",
+    nome: "Edifício Aurora",
+    descricao: "Apartamentos de luxo com vista para o mar",
+    endereco: "Av. Beira Mar, 1000",
+    cidade: "Florianópolis",
+    estado: "SC",
+    preco: 750000,
+    coordenadas: { lat: -27.595417, lng: -48.548361 },
+    status: "disponivel",
+    imagens: ["https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"],
+    // ... other properties
   },
   {
-    id: "prop002",
-    title: "Luxury Beach House",
-    description: "Stunning beachfront property with direct access to the ocean.",
-    price: 1200000,
-    address: "456 Ocean Drive",
-    city: "Malibu",
-    state: "CA",
-    zipCode: "90265",
-    bedrooms: 4,
-    bathrooms: 3.5,
-    area: 2800,
-    images: ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"],
-    featured: true,
-    status: "available",
-    coordinates: {
-      lat: 34.0259,
-      lng: -118.7798
-    },
-    amenities: ["Beach Access", "Deck", "Hot Tub", "Fireplace"],
-    createdAt: "2023-03-10T10:00:00Z",
-    updatedAt: "2023-03-10T10:00:00Z",
-    createdBy: "user2"
+    id: "2",
+    nome: "Residencial Montanha",
+    descricao: "Casas em condomínio fechado com área verde",
+    endereco: "Rua das Palmeiras, 500",
+    cidade: "Gramado",
+    estado: "RS",
+    preco: 950000,
+    coordenadas: { lat: -29.373464, lng: -50.876490 },
+    status: "disponivel",
+    imagens: ["https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"],
+    // ... other properties
   },
   {
-    id: "prop003",
-    title: "Cozy Mountain Cabin",
-    description: "Charming cabin surrounded by nature with stunning mountain views.",
-    price: 350000,
-    address: "789 Pine Road",
-    city: "Aspen",
-    state: "CO",
-    zipCode: "81611",
-    bedrooms: 3,
-    bathrooms: 2,
-    area: 1500,
-    images: ["https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"],
-    featured: false,
-    status: "available",
-    coordinates: {
-      lat: 39.1911,
-      lng: -106.8175
-    },
-    amenities: ["Fireplace", "Deck", "Mountain View", "Hiking Trails"],
-    createdAt: "2023-05-22T10:00:00Z",
-    updatedAt: "2023-05-22T10:00:00Z",
-    createdBy: "user1"
-  }
+    id: "3",
+    nome: "Condomínio Vista Verde",
+    descricao: "Terrenos em loteamento planejado",
+    endereco: "Estrada do Sol, Km 10",
+    cidade: "Belo Horizonte",
+    estado: "MG",
+    preco: 320000,
+    coordenadas: { lat: -19.917854, lng: -43.934450 },
+    status: "disponivel",
+    imagens: ["https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"],
+    // ... other properties
+  },
 ];
 
 export default function PropertyMap() {
@@ -107,15 +73,15 @@ export default function PropertyMap() {
     queryFn: async () => {
       // This would be an API call in a real application
       await new Promise(resolve => setTimeout(resolve, 1000));
-      return mockProperties;
+      return sampleProperties;
     }
   });
 
   const filteredProperties = properties.filter(property => 
-    property.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    property.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    property.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    property.state.toLowerCase().includes(searchTerm.toLowerCase())
+    property.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    property.endereco.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    property.cidade.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    property.estado.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // This would be replaced with actual Map implementation
@@ -195,7 +161,7 @@ export default function PropertyMap() {
                     {filteredProperties.map((property) => (
                       <div key={property.id} className="inline-flex items-center bg-primary/10 text-primary rounded-full px-3 py-1 text-sm">
                         <MapPin className="h-3 w-3 mr-1" />
-                        {property.city}, {property.state}
+                        {property.cidade}, {property.estado}
                       </div>
                     ))}
                   </div>

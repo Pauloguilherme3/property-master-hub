@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { ReservationForm } from "@/components/ui/ReservationForm";
 import { ArrowLeft, Bed, Bath, Square, MapPin, Calendar, Heart, Share2, Edit, Trash2, User, Phone, Mail, FileText, Clock } from "lucide-react";
 import { Property, UserRole } from "@/types";
-import { mockProperties, mockReservations, formatCurrency } from "@/utils/animations";
+import { mockEmpreendimentos as mockProperties, mockReservas as mockReservations } from "@/utils/animations";
 
 const PropertyDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,7 +20,6 @@ const PropertyDetail = () => {
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
   
-  // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login");
@@ -29,7 +27,6 @@ const PropertyDetail = () => {
   }, [isAuthenticated, navigate]);
 
   useEffect(() => {
-    // Simulate API request
     setLoading(true);
     setTimeout(() => {
       const foundProperty = mockProperties.find(p => p.id === id);
@@ -39,7 +36,6 @@ const PropertyDetail = () => {
       setLoading(false);
     }, 500);
     
-    // Scroll to top on load
     window.scrollTo(0, 0);
   }, [id]);
 
@@ -95,7 +91,6 @@ const PropertyDetail = () => {
 
   const shareProperty = () => {
     navigator.clipboard.writeText(window.location.href);
-    // In a real app, you'd show a toast notification here
     alert("Link copied to clipboard!");
   };
 
@@ -147,19 +142,13 @@ const PropertyDetail = () => {
         </div>
       </div>
       
-      {/* Property status badge */}
       <div className="mb-4">
-        <Badge 
-          className={
-            property.status === "available"
-              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-              : property.status === "reserved"
-              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
-              : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-          }
-        >
-          {property.status.charAt(0).toUpperCase() + property.status.slice(1)}
-        </Badge>
+        {property.status === "disponivel" && (
+          <Badge className="bg-green-100 text-green-800">Disponível</Badge>
+        )}
+        {property.status === "reservado" && (
+          <Badge className="bg-yellow-100 text-yellow-800">Reservado</Badge>
+        )}
         
         {property.featured && (
           <Badge className="ml-2 bg-primary/90 text-white">
@@ -168,7 +157,6 @@ const PropertyDetail = () => {
         )}
       </div>
       
-      {/* Property images */}
       <div className="mb-8">
         {property.images.length > 0 ? (
           <Carousel className="w-full">
@@ -195,7 +183,6 @@ const PropertyDetail = () => {
         )}
       </div>
       
-      {/* Property details */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         <div className="lg:col-span-2 space-y-8">
           <Card>

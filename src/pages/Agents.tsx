@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
@@ -27,7 +26,7 @@ import {
   MoreHorizontal, 
   Plus 
 } from "lucide-react";
-import { Agent, UserRole } from "@/types";
+import { Agent, UserRole, Corretor } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -36,54 +35,54 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 
 // Mock data - in a real app, this would come from an API
-const mockAgents: Agent[] = [
+const mockAgents: Corretor[] = [
   {
     id: "1",
     userId: "user1",
-    name: "John Smith",
+    nome: "John Smith",
     email: "john.smith@proprmaster.com",
-    phone: "(555) 123-4567",
-    bio: "Experienced agent specializing in luxury properties",
-    specialties: ["Luxury", "Residential", "Investment"],
+    telefone: "(555) 123-4567",
+    biografia: "Experienced agent specializing in luxury properties",
+    especialidades: ["Luxury", "Residential", "Investment"],
     avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    rating: 4.8,
-    salesVolume: 5250000,
-    activeListings: 12,
-    closedDeals: 45,
-    joinedAt: "2022-04-15T10:00:00Z",
-    status: "active"
+    avaliacao: 4.8,
+    volumeVendas: 5250000,
+    imoveisAtivos: 12,
+    negociosFechados: 45,
+    dataIngresso: "2022-04-15T10:00:00Z",
+    status: "ativo"
   },
   {
     id: "2",
     userId: "user2",
-    name: "Sarah Johnson",
+    nome: "Sarah Johnson",
     email: "sarah.johnson@proprmaster.com",
-    phone: "(555) 987-6543",
-    bio: "New agent with a background in marketing",
-    specialties: ["Residential", "First-time buyers"],
+    telefone: "(555) 987-6543",
+    biografia: "New agent with a background in marketing",
+    especialidades: ["Residential", "First-time buyers"],
     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    rating: 4.2,
-    salesVolume: 1850000,
-    activeListings: 5,
-    closedDeals: 12,
-    joinedAt: "2023-01-10T10:00:00Z",
-    status: "active"
+    avaliacao: 4.2,
+    volumeVendas: 1850000,
+    imoveisAtivos: 5,
+    negociosFechados: 12,
+    dataIngresso: "2023-01-10T10:00:00Z",
+    status: "ativo"
   },
   {
     id: "3",
     userId: "user3",
-    name: "Michael Rodriguez",
+    nome: "Michael Rodriguez",
     email: "michael.rodriguez@proprmaster.com",
-    phone: "(555) 456-7890",
-    bio: "Top-performing agent with 10+ years of experience",
-    specialties: ["Commercial", "Investment", "Development"],
+    telefone: "(555) 456-7890",
+    biografia: "Top-performing agent with 10+ years of experience",
+    especialidades: ["Commercial", "Investment", "Development"],
     avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-    rating: 4.9,
-    salesVolume: 12500000,
-    activeListings: 18,
-    closedDeals: 78,
-    joinedAt: "2018-09-20T10:00:00Z",
-    status: "active"
+    avaliacao: 4.9,
+    volumeVendas: 12500000,
+    imoveisAtivos: 18,
+    negociosFechados: 78,
+    dataIngresso: "2018-09-20T10:00:00Z",
+    status: "ativo"
   }
 ];
 
@@ -109,9 +108,9 @@ export default function Agents() {
   ]);
 
   const filteredAgents = agents.filter(agent => 
-    agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    agent.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
     agent.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    agent.specialties.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()))
+    agent.especialidades.some(s => s.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const handleAddAgent = () => {
@@ -199,33 +198,33 @@ export default function Agents() {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar>
-                            <AvatarImage src={agent.avatar} alt={agent.name} />
-                            <AvatarFallback>{agent.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                            <AvatarImage src={agent.avatar} alt={agent.nome} />
+                            <AvatarFallback>{agent.nome.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                           </Avatar>
                           <div>
-                            <div className="font-medium">{agent.name}</div>
+                            <div className="font-medium">{agent.nome}</div>
                             <div className="text-sm text-muted-foreground">{agent.email}</div>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          {agent.specialties.map((specialty, index) => (
+                          {agent.especialidades.map((specialty, index) => (
                             <Badge key={index} variant="outline" className="text-xs">
                               {specialty}
                             </Badge>
                           ))}
                         </div>
                       </TableCell>
-                      <TableCell className="text-right">{agent.activeListings}</TableCell>
-                      <TableCell className="text-right">{agent.closedDeals}</TableCell>
+                      <TableCell className="text-right">{agent.imoveisAtivos}</TableCell>
+                      <TableCell className="text-right">{agent.negociosFechados}</TableCell>
                       <TableCell className="text-right">
-                        <span className="font-medium">{agent.rating}</span>
+                        <span className="font-medium">{agent.avaliacao}</span>
                         <span className="text-muted-foreground">/5</span>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Badge variant={agent.status === 'active' ? 'default' : 'secondary'}>
-                          {agent.status === 'active' ? 'Active' : agent.status === 'inactive' ? 'Inactive' : 'On Leave'}
+                        <Badge variant={agent.status === "ativo" ? 'default' : 'secondary'}>
+                          {agent.status === "ativo" ? 'Ativo' : agent.status === "inativo" ? 'Inativo' : 'De Férias'}
                         </Badge>
                       </TableCell>
                       {canManageAgents && (

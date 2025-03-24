@@ -1,4 +1,3 @@
-
 export enum UserRole {
   CORRETOR = "corretor",
   GERENTE = "gerente",
@@ -7,10 +6,9 @@ export enum UserRole {
   ADMINISTRADOR = "administrador",
   FUNCIONARIO = "funcionario",
   
-  // English aliases for backward compatibility
+  // English aliases for backward compatibility - using different enum keys
   AGENT = "corretor",
   MANAGER = "gerente",
-  SUPERVISOR = "supervisor",
   PRODUCT_MANAGER = "gerente_produto",
   ADMINISTRATOR = "administrador",
   STAFF = "funcionario"
