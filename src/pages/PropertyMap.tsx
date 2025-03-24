@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
@@ -35,7 +34,7 @@ const sampleProperties = [
     imagens: ["https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"],
     cep: "88000-000",
     construtora: "Construtora Exemplo",
-    tipoImovel: "apartamento",
+    tipoImovel: "apartamento" as const,
     previsaoEntrega: "2025-01-01",
     dormitorios: 3,
     banheiros: 2,
@@ -58,7 +57,7 @@ const sampleProperties = [
     imagens: ["https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"],
     cep: "95670-000",
     construtora: "Construtora Exemplo",
-    tipoImovel: "casa",
+    tipoImovel: "casa" as const,
     previsaoEntrega: "2024-06-01",
     dormitorios: 4,
     banheiros: 3,
@@ -81,7 +80,7 @@ const sampleProperties = [
     imagens: ["https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"],
     cep: "30000-000",
     construtora: "Construtora Exemplo",
-    tipoImovel: "lote",
+    tipoImovel: "lote" as const,
     previsaoEntrega: "2023-12-01",
     dormitorios: 0,
     banheiros: 0,
@@ -98,11 +97,9 @@ export default function PropertyMap() {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
 
-  // Fetching properties data
   const { data: properties = [], isLoading } = useQuery({
     queryKey: ["properties"],
     queryFn: async () => {
-      // This would be an API call in a real application
       await new Promise(resolve => setTimeout(resolve, 1000));
       return sampleProperties;
     }
@@ -115,7 +112,6 @@ export default function PropertyMap() {
     property.estado.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // This would be replaced with actual Map implementation
   const handleMapInteraction = () => {
     toast({
       title: "Map Feature",

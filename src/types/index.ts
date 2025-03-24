@@ -1,3 +1,4 @@
+
 export enum UserRole {
   CORRETOR = "corretor",
   GERENTE = "gerente",

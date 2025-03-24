@@ -10,10 +10,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Calendar as CalendarIcon, Search, Filter, Eye, CheckCircle, XCircle, Clock } from "lucide-react";
-import { mockEmpreendimentos, mockUnidades, mockReservas } from "@/utils/animations";
+import { mockEmpreendimentos, mockUnidades, mockReservas, getStatusReserva } from "@/utils/animations";
 import { Reserva } from "@/types";
 
-const getStatusReserva = (status: string): { label: string; color: string } => {
+const getStatusReservation = (status: string): { label: string; color: string } => {
   switch (status) {
     case "confirmada":
       return {
@@ -201,11 +201,11 @@ const ReservasPage = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getStatusReserva(reserva.status).color}>
+                          <Badge className={getStatusReservation(reserva.status).color}>
                             {reserva.status === "confirmada" && <CheckCircle className="h-3 w-3 mr-1" />}
                             {reserva.status === "pendente" && <Clock className="h-3 w-3 mr-1" />}
                             {reserva.status === "cancelada" && <XCircle className="h-3 w-3 mr-1" />}
-                            {getStatusReserva(reserva.status).label}
+                            {getStatusReservation(reserva.status).label}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -291,11 +291,11 @@ const ReservasPage = () => {
                                   minute: "2-digit"
                                 })}
                               </div>
-                              <Badge className={getStatusReserva(reserva.status).color}>
+                              <Badge className={getStatusReservation(reserva.status).color}>
                                 {reserva.status === "confirmada" && <CheckCircle className="h-3 w-3 mr-1" />}
                                 {reserva.status === "pendente" && <Clock className="h-3 w-3 mr-1" />}
                                 {reserva.status === "cancelada" && <XCircle className="h-3 w-3 mr-1" />}
-                                {getStatusReserva(reserva.status).label}
+                                {getStatusReservation(reserva.status).label}
                               </Badge>
                             </div>
                             

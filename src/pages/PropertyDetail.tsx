@@ -77,7 +77,7 @@ const PropertyDetail = () => {
     );
   }
 
-  const propertyReservations = mockReservations.filter(r => r.propertyId === property.id);
+  const propertyReservations = mockReservations.filter(r => r.empreendimentoId === property.id);
   
   const canEditProperty = hasPermission([
     UserRole.GERENTE, 
@@ -103,7 +103,7 @@ const PropertyDetail = () => {
             Back
           </Button>
           <h1 className="text-2xl font-bold sm:text-3xl truncate">
-            {property.title}
+            {property.nome}
           </h1>
         </div>
         
@@ -150,7 +150,7 @@ const PropertyDetail = () => {
           <Badge className="bg-yellow-100 text-yellow-800">Reservado</Badge>
         )}
         
-        {property.featured && (
+        {property.destaque && (
           <Badge className="ml-2 bg-primary/90 text-white">
             Featured
           </Badge>
@@ -158,15 +158,15 @@ const PropertyDetail = () => {
       </div>
       
       <div className="mb-8">
-        {property.images.length > 0 ? (
+        {property.imagens.length > 0 ? (
           <Carousel className="w-full">
             <CarouselContent>
-              {property.images.map((image, index) => (
+              {property.imagens.map((image, index) => (
                 <CarouselItem key={index} className="pl-0">
                   <div className="aspect-video overflow-hidden rounded-xl">
                     <img
                       src={image}
-                      alt={`${property.title} - Image ${index + 1}`}
+                      alt={`${property.nome} - Image ${index + 1}`}
                       className="w-full h-full object-cover transition-all hover:scale-105 duration-500"
                     />
                   </div>
@@ -192,12 +192,12 @@ const PropertyDetail = () => {
             <CardContent>
               <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
                 <h2 className="text-3xl font-bold text-primary mb-2 md:mb-0">
-                  {formatCurrency(property.price || property.preco)}
+                  {formatCurrency(property.preco)}
                 </h2>
                 <div className="flex items-center text-muted-foreground">
                   <MapPin className="h-4 w-4 mr-2" />
                   <span>
-                    {property.address}, {property.city}, {property.state} {property.zipCode}
+                    {property.endereco}, {property.cidade}, {property.estado} {property.cep}
                   </span>
                 </div>
               </div>
@@ -205,12 +205,12 @@ const PropertyDetail = () => {
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="flex flex-col items-center justify-center p-4 bg-muted/50 rounded-lg">
                   <Bed className="h-5 w-5 text-primary mb-2" />
-                  <span className="text-lg font-medium">{property.bedrooms}</span>
+                  <span className="text-lg font-medium">{property.dormitorios}</span>
                   <span className="text-sm text-muted-foreground">Bedrooms</span>
                 </div>
                 <div className="flex flex-col items-center justify-center p-4 bg-muted/50 rounded-lg">
                   <Bath className="h-5 w-5 text-primary mb-2" />
-                  <span className="text-lg font-medium">{property.bathrooms}</span>
+                  <span className="text-lg font-medium">{property.banheiros}</span>
                   <span className="text-sm text-muted-foreground">Bathrooms</span>
                 </div>
                 <div className="flex flex-col items-center justify-center p-4 bg-muted/50 rounded-lg">
@@ -225,7 +225,7 @@ const PropertyDetail = () => {
               <div>
                 <h3 className="text-lg font-semibold mb-3">Description</h3>
                 <p className="text-muted-foreground whitespace-pre-line">
-                  {property.description}
+                  {property.descricao}
                 </p>
               </div>
               
@@ -278,7 +278,7 @@ const PropertyDetail = () => {
               <div className="mt-4 text-sm text-muted-foreground">
                 <p>
                   <MapPin className="h-4 w-4 inline mr-1" />
-                  {property.address}, {property.city}, {property.state} {property.zipCode}
+                  {property.endereco}, {property.cidade}, {property.estado} {property.cep}
                 </p>
               </div>
             </CardContent>
@@ -372,7 +372,7 @@ const PropertyDetail = () => {
                       </div>
                       <div className="space-y-1">
                         <div className="flex items-center">
-                          <p className="font-medium text-sm">{reservation.clientName}</p>
+                          <p className="font-medium text-sm">{reservation.nomeCliente}</p>
                           <Badge 
                             variant="outline" 
                             className={
@@ -386,12 +386,12 @@ const PropertyDetail = () => {
                         </div>
                         <div className="flex items-center text-xs text-muted-foreground">
                           <Clock className="h-3 w-3 mr-1" />
-                          {new Date(reservation.startDate).toLocaleString()}
+                          {new Date(reservation.dataInicio).toLocaleString()}
                         </div>
-                        {reservation.notes && (
+                        {reservation.observacoes && (
                           <div className="flex items-start text-xs text-muted-foreground mt-1">
                             <FileText className="h-3 w-3 mr-1 mt-0.5" />
-                            <span>{reservation.notes}</span>
+                            <span>{reservation.observacoes}</span>
                           </div>
                         )}
                       </div>
