@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
@@ -27,7 +26,7 @@ import {
   Legend,
   ResponsiveContainer
 } from "recharts";
-import { Agent, AgentPerformance as AgentPerformanceType } from "@/types";
+import { Corretor, DesempenhoCorretor } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -36,17 +35,17 @@ import { Badge } from "@/components/ui/badge";
 const mockAgents = [
   {
     id: "1",
-    name: "John Smith",
+    nome: "John Smith",
     avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
   },
   {
     id: "2",
-    name: "Sarah Johnson",
+    nome: "Sarah Johnson",
     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
   },
   {
     id: "3",
-    name: "Michael Rodriguez",
+    nome: "Michael Rodriguez",
     avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
   }
 ];
@@ -326,7 +325,7 @@ export default function AgentPerformance() {
                 <SelectItem value="all">All Agents</SelectItem>
                 {agents.map((agent) => (
                   <SelectItem key={agent.id} value={agent.id}>
-                    {agent.name}
+                    {agent.nome}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -456,10 +455,10 @@ export default function AgentPerformance() {
                   return (
                     <div key={agent.id} className="flex flex-col items-center p-4 border rounded-lg">
                       <Avatar className="h-16 w-16 mb-3">
-                        <AvatarImage src={agent.avatar} alt={agent.name} />
-                        <AvatarFallback>{agent.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        <AvatarImage src={agent.avatar} alt={agent.nome} />
+                        <AvatarFallback>{agent.nome.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                       </Avatar>
-                      <h3 className="text-lg font-semibold mb-1">{agent.name}</h3>
+                      <h3 className="text-lg font-semibold mb-1">{agent.nome}</h3>
                       <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-3 text-sm w-full">
                         <div className="text-muted-foreground">Sales:</div>
                         <div className="text-right font-medium">{totalSales}</div>

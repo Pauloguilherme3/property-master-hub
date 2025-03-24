@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { ReservationForm } from "@/components/ui/ReservationForm";
 import { ArrowLeft, Bed, Bath, Square, MapPin, Calendar, Heart, Share2, Edit, Trash2, User, Phone, Mail, FileText, Clock } from "lucide-react";
 import { Property, UserRole } from "@/types";
-import { mockEmpreendimentos as mockProperties, mockReservas as mockReservations } from "@/utils/animations";
+import { mockEmpreendimentos as mockProperties, mockReservas as mockReservations, formatCurrency } from "@/utils/animations";
 
 const PropertyDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -80,9 +80,9 @@ const PropertyDetail = () => {
   const propertyReservations = mockReservations.filter(r => r.propertyId === property.id);
   
   const canEditProperty = hasPermission([
-    UserRole.MANAGER, 
-    UserRole.ADMINISTRATOR, 
-    UserRole.PRODUCT_MANAGER
+    UserRole.GERENTE, 
+    UserRole.ADMINISTRADOR, 
+    UserRole.GERENTE_PRODUTO
   ]);
 
   const toggleFavorite = () => {
@@ -192,7 +192,7 @@ const PropertyDetail = () => {
             <CardContent>
               <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
                 <h2 className="text-3xl font-bold text-primary mb-2 md:mb-0">
-                  {formatCurrency(property.price)}
+                  {formatCurrency(property.price || property.preco)}
                 </h2>
                 <div className="flex items-center text-muted-foreground">
                   <MapPin className="h-4 w-4 mr-2" />
@@ -376,7 +376,7 @@ const PropertyDetail = () => {
                           <Badge 
                             variant="outline" 
                             className={
-                              reservation.status === "confirmed"
+                              reservation.status === "confirmada"
                                 ? "ml-2 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-xs"
                                 : "ml-2 bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs"
                             }

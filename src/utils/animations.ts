@@ -105,6 +105,9 @@ export const mockEmpreendimentos: Empreendimento[] = [
   }
 ];
 
+// Alias for English compatibility
+export const mockProperties = mockEmpreendimentos;
+
 // Mock data para unidades
 export const mockUnidades: Unidade[] = [
   {
@@ -163,6 +166,9 @@ export const mockUnidades: Unidade[] = [
     posicao: { x: 250, y: 100 }
   }
 ];
+
+// Alias for English compatibility
+export const mockUnits = mockUnidades;
 
 // Mock data para formas de pagamento
 export const mockFormasPagamento: FormaPagamento[] = [
@@ -238,6 +244,9 @@ export const mockReservas: Reserva[] = [
     criadoPor: "corretor1"
   }
 ];
+
+// Alias for English compatibility
+export const mockReservations = mockReservas;
 
 // Utilities for animations
 export const pageTransition = {
@@ -340,4 +349,3 @@ export const getStatusReserva = (status: string): { label: string; color: string
       };
   }
 };
-

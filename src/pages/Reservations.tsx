@@ -10,8 +10,33 @@ import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Calendar as CalendarIcon, Search, Filter, Eye, CheckCircle, XCircle, Clock } from "lucide-react";
-import { mockEmpreendimentos as mockProperties, mockReservas as mockReservations } from "@/utils/animations";
+import { mockEmpreendimentos, mockUnidades, mockReservas } from "@/utils/animations";
 import { Reserva } from "@/types";
+
+const getStatusReserva = (status: string): { label: string; color: string } => {
+  switch (status) {
+    case "confirmada":
+      return {
+        label: "Confirmada",
+        color: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+      };
+    case "pendente":
+      return {
+        label: "Pendente",
+        color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
+      };
+    case "cancelada":
+      return {
+        label: "Cancelada",
+        color: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+      };
+    default:
+      return {
+        label: "Desconhecido",
+        color: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400"
+      };
+  }
+};
 
 const ReservasPage = () => {
   const { user, isAuthenticated } = useAuth();
@@ -23,7 +48,6 @@ const ReservasPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("todos");
   
-  // Redirecionar se não estiver autenticado
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login");
@@ -31,10 +55,9 @@ const ReservasPage = () => {
   }, [isAuthenticated, navigate]);
 
   useEffect(() => {
-    // Inicializar reservas com dados do empreendimento e unidade
     const reservasCompletas = mockReservas.map(reserva => ({
       ...reserva,
-      empreendimento: mockProperties.find(e => e.id === reserva.empreendimentoId),
+      empreendimento: mockEmpreendimentos.find(e => e.id === reserva.empreendimentoId),
       unidade: mockUnidades.find(u => u.id === reserva.unidadeId)
     }));
     
@@ -49,7 +72,6 @@ const ReservasPage = () => {
   const filtrarReservas = () => {
     let filtradas = [...reservas];
     
-    // Aplicar filtro de termo de busca
     if (searchTerm) {
       const termo = searchTerm.toLowerCase();
       filtradas = filtradas.filter(reserva => 
@@ -60,12 +82,10 @@ const ReservasPage = () => {
       );
     }
     
-    // Aplicar filtro de status
     if (statusFilter !== "todos") {
       filtradas = filtradas.filter(reserva => reserva.status === statusFilter);
     }
     
-    // Aplicar filtro de data
     if (selectedDate) {
       filtradas = filtradas.filter(reserva => {
         const dataReserva = new Date(reserva.dataInicio);

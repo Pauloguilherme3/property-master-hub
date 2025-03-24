@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
@@ -32,7 +33,17 @@ const sampleProperties = [
     coordenadas: { lat: -27.595417, lng: -48.548361 },
     status: "disponivel",
     imagens: ["https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"],
-    // ... other properties
+    cep: "88000-000",
+    construtora: "Construtora Exemplo",
+    tipoImovel: "apartamento",
+    previsaoEntrega: "2025-01-01",
+    dormitorios: 3,
+    banheiros: 2,
+    area: 120,
+    destaque: true,
+    dataCriacao: "2023-01-01",
+    dataAtualizacao: "2023-01-01",
+    criadoPor: "admin"
   },
   {
     id: "2",
@@ -45,7 +56,17 @@ const sampleProperties = [
     coordenadas: { lat: -29.373464, lng: -50.876490 },
     status: "disponivel",
     imagens: ["https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"],
-    // ... other properties
+    cep: "95670-000",
+    construtora: "Construtora Exemplo",
+    tipoImovel: "casa",
+    previsaoEntrega: "2024-06-01",
+    dormitorios: 4,
+    banheiros: 3,
+    area: 200,
+    destaque: false,
+    dataCriacao: "2023-01-01",
+    dataAtualizacao: "2023-01-01",
+    criadoPor: "admin"
   },
   {
     id: "3",
@@ -58,7 +79,17 @@ const sampleProperties = [
     coordenadas: { lat: -19.917854, lng: -43.934450 },
     status: "disponivel",
     imagens: ["https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3"],
-    // ... other properties
+    cep: "30000-000",
+    construtora: "Construtora Exemplo",
+    tipoImovel: "lote",
+    previsaoEntrega: "2023-12-01",
+    dormitorios: 0,
+    banheiros: 0,
+    area: 400,
+    destaque: true,
+    dataCriacao: "2023-01-01",
+    dataAtualizacao: "2023-01-01",
+    criadoPor: "admin"
   },
 ];
 
