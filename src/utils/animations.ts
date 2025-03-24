@@ -1,4 +1,3 @@
-
 import { UserRole, Property, Reservation } from "@/types";
 
 export const formatCurrency = (value: number): string => {
@@ -99,7 +98,7 @@ export const mockProperties: Property[] = [
   }
 ];
 
-// Mock data for reservations
+// Mock data for reservations with explicit visitType
 export const mockReservations: Reservation[] = [
   {
     id: "res-001",
