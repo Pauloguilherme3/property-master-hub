@@ -1,0 +1,144 @@
+
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { User, UserRole, AuthContextType } from "@/types";
+import { useToast } from "@/components/ui/use-toast";
+
+// Mock user data for demonstration
+const MOCK_USERS = [
+  {
+    id: "1",
+    name: "Agent User",
+    email: "agent@example.com",
+    password: "password",
+    role: UserRole.AGENT,
+    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+  },
+  {
+    id: "2",
+    name: "Manager User",
+    email: "manager@example.com",
+    password: "password",
+    role: UserRole.MANAGER,
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+  },
+  {
+    id: "3",
+    name: "Admin User",
+    email: "admin@example.com",
+    password: "password",
+    role: UserRole.ADMINISTRATOR,
+    avatar: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+  }
+];
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { toast } = useToast();
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error("Failed to parse stored user:", error);
+        localStorage.removeItem("user");
+      }
+    }
+    setIsLoading(false);
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    setIsLoading(true);
+    
+    // Simulate API request
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const foundUser = MOCK_USERS.find(
+      u => u.email === email && u.password === password
+    );
+    
+    if (foundUser) {
+      // Remove password before storing
+      const { password: _, ...userWithoutPassword } = foundUser;
+      setUser(userWithoutPassword);
+      localStorage.setItem("user", JSON.stringify(userWithoutPassword));
+      toast({
+        title: "Login successful",
+        description: `Welcome back, ${foundUser.name}!`,
+      });
+    } else {
+      toast({
+        title: "Login failed",
+        description: "Invalid email or password",
+        variant: "destructive",
+      });
+      throw new Error("Invalid credentials");
+    }
+    
+    setIsLoading(false);
+  };
+
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem("user");
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out",
+    });
+  };
+
+  const hasPermission = (requiredRole: UserRole | UserRole[]) => {
+    if (!user) return false;
+    
+    if (Array.isArray(requiredRole)) {
+      return requiredRole.includes(user.role);
+    }
+    
+    // Admin always has access
+    if (user.role === UserRole.ADMINISTRATOR) return true;
+    
+    // Role hierarchy for other roles
+    switch (requiredRole) {
+      case UserRole.AGENT:
+        return true; // All roles can access agent-level features
+      case UserRole.STAFF:
+        return user.role !== UserRole.AGENT;
+      case UserRole.MANAGER:
+        return [UserRole.MANAGER, UserRole.SUPERVISOR, UserRole.PRODUCT_MANAGER].includes(user.role);
+      case UserRole.SUPERVISOR:
+        return [UserRole.SUPERVISOR, UserRole.PRODUCT_MANAGER].includes(user.role);
+      case UserRole.PRODUCT_MANAGER:
+        return user.role === UserRole.PRODUCT_MANAGER;
+      default:
+        return false;
+    }
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isLoading,
+        login,
+        logout,
+        hasPermission,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
