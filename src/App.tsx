@@ -76,11 +76,15 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+      <BrowserRouter>
+        <AuthProvider>
+          <Toaster />
+          <Sonner />
           <Routes>
+            <Route 
+              path="/login" 
+              element={<LoginPage />} 
+            />
             <Route 
               path="/" 
               element={
@@ -88,10 +92,6 @@ const App = () => (
                   <Index />
                 </AppLayout>
               } 
-            />
-            <Route 
-              path="/login" 
-              element={<LoginPage />} 
             />
             <Route 
               path="/dashboard" 
@@ -190,8 +190,8 @@ const App = () => (
               } 
             />
           </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );

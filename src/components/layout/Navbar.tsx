@@ -64,6 +64,10 @@ export function Navbar({ toggleSidebar, isSidebarOpen }: NavbarProps) {
     scrolled ? "bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg shadow-sm" : "bg-transparent"
   );
 
+  // Get the display name and initial safely
+  const displayName = user?.nome || "";
+  const userInitial = displayName.charAt(0) || "";
+
   return (
     <nav className={navbarClasses}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -96,7 +100,7 @@ export function Navbar({ toggleSidebar, isSidebarOpen }: NavbarProps) {
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </Button>
             
-            {isAuthenticated && (
+            {isAuthenticated && user && (
               <>
                 <Button
                   variant="ghost"
@@ -112,18 +116,18 @@ export function Navbar({ toggleSidebar, isSidebarOpen }: NavbarProps) {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-10 w-10 rounded-full transition-all">
                       <Avatar className="h-9 w-9 transition-all">
-                        <AvatarImage src={user?.avatar} alt={user?.nome} />
-                        <AvatarFallback>{user?.nome.charAt(0)}</AvatarFallback>
+                        <AvatarImage src={user.avatar} alt={displayName} />
+                        <AvatarFallback>{userInitial}</AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56 glass">
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user?.nome}</p>
-                        <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                        <p className="text-sm font-medium leading-none">{displayName}</p>
+                        <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
                         <span className="mt-1 text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5 capitalize">
-                          {user?.role.replace("_", " ")}
+                          {user.role.replace("_", " ")}
                         </span>
                       </div>
                     </DropdownMenuLabel>
