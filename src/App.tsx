@@ -12,12 +12,16 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import Properties from "./pages/Properties";
-import PropertyDetail from "./pages/PropertyDetail";
-import PropertyMap from "./pages/PropertyMap";
-import Reservations from "./pages/Reservations";
-import Agents from "./pages/Agents";
-import AgentPerformance from "./pages/AgentPerformance";
+import Empreendimentos from "./pages/Empreendimentos";
+import EmpreendimentoDetalhe from "./pages/EmpreendimentoDetalhe";
+import EmpreendimentoMapa from "./pages/EmpreendimentoMapa";
+import Reservas from "./pages/Reservas";
+import Corretores from "./pages/Corretores";
+import DesempenhoCorretores from "./pages/DesempenhoCorretores";
+import Unidades from "./pages/Unidades";
+import ReservaFormulario from "./pages/ReservaFormulario";
+import Clientes from "./pages/Clientes";
+import RelatoriosAnalises from "./pages/RelatoriosAnalises";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient();
@@ -98,50 +102,82 @@ const App = () => (
               } 
             />
             <Route 
-              path="/properties" 
+              path="/empreendimentos" 
               element={
                 <AppLayout>
-                  <Properties />
+                  <Empreendimentos />
                 </AppLayout>
               } 
             />
             <Route 
-              path="/properties/:id" 
+              path="/empreendimentos/:id" 
               element={
                 <AppLayout>
-                  <PropertyDetail />
+                  <EmpreendimentoDetalhe />
                 </AppLayout>
               } 
             />
             <Route 
-              path="/properties/map" 
+              path="/empreendimentos/mapa" 
               element={
                 <AppLayout>
-                  <PropertyMap />
+                  <EmpreendimentoMapa />
                 </AppLayout>
               } 
             />
             <Route 
-              path="/reservations" 
+              path="/unidades" 
               element={
                 <AppLayout>
-                  <Reservations />
+                  <Unidades />
                 </AppLayout>
               } 
             />
             <Route 
-              path="/agents" 
+              path="/unidades/:id/reserva" 
               element={
                 <AppLayout>
-                  <Agents />
+                  <ReservaFormulario />
                 </AppLayout>
               } 
             />
             <Route 
-              path="/agents/performance" 
+              path="/reservas" 
               element={
                 <AppLayout>
-                  <AgentPerformance />
+                  <Reservas />
+                </AppLayout>
+              } 
+            />
+            <Route 
+              path="/corretores" 
+              element={
+                <AppLayout>
+                  <Corretores />
+                </AppLayout>
+              } 
+            />
+            <Route 
+              path="/corretores/desempenho" 
+              element={
+                <AppLayout>
+                  <DesempenhoCorretores />
+                </AppLayout>
+              } 
+            />
+            <Route 
+              path="/clientes" 
+              element={
+                <AppLayout>
+                  <Clientes />
+                </AppLayout>
+              } 
+            />
+            <Route 
+              path="/relatorios" 
+              element={
+                <AppLayout>
+                  <RelatoriosAnalises />
                 </AppLayout>
               } 
             />

@@ -1,106 +1,135 @@
 
 export enum UserRole {
-  AGENT = "agent",
-  MANAGER = "manager",
+  CORRETOR = "corretor",
+  GERENTE = "gerente",
   SUPERVISOR = "supervisor",
-  PRODUCT_MANAGER = "product_manager",
-  ADMINISTRATOR = "administrator",
-  STAFF = "staff"
+  GERENTE_PRODUTO = "gerente_produto",
+  ADMINISTRADOR = "administrador",
+  FUNCIONARIO = "funcionario"
 }
 
 export interface User {
   id: string;
-  name: string;
+  nome: string;
   email: string;
   role: UserRole;
   avatar?: string;
 }
 
-export interface Property {
+export interface Empreendimento {
   id: string;
-  title: string;
-  description: string;
-  price: number;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  bedrooms: number;
-  bathrooms: number;
+  nome: string;
+  descricao: string;
+  preco: number;
+  endereco: string;
+  cidade: string;
+  estado: string;
+  cep: string;
+  construtora: string;
+  tipoImovel: "casa" | "apartamento" | "lote" | "comercial";
+  previsaoEntrega: string;
+  dormitorios: number;
+  banheiros: number;
   area: number;
-  images: string[];
-  virtualTour?: string;
+  imagens: string[];
+  tourVirtual?: string;
   videos?: string[];
-  featured: boolean;
-  status: "available" | "reserved" | "sold";
-  coordinates?: {
+  destaque: boolean;
+  status: "disponivel" | "reservado" | "vendido";
+  coordenadas?: {
     lat: number;
     lng: number;
   };
-  amenities?: string[];
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  assignedAgentId?: string;
+  comodidades?: string[];
+  etapaConstrucao?: {
+    nome: string;
+    porcentagemConcluida: number;
+  }[];
+  dataCriacao: string;
+  dataAtualizacao: string;
+  criadoPor: string;
+  corretorResponsavelId?: string;
 }
 
-export interface Agent {
+export interface Unidade {
+  id: string;
+  empreendimentoId: string;
+  numero: string;
+  bloco?: string;
+  andar?: number;
+  dormitorios: number;
+  banheiros: number;
+  area: number;
+  preco: number;
+  status: "disponivel" | "reservado" | "vendido";
+  plantaBaixa?: string;
+  posicao?: {
+    x: number;
+    y: number;
+  };
+}
+
+export interface Corretor {
   id: string;
   userId: string;
-  name: string;
+  nome: string;
   email: string;
-  phone: string;
-  bio: string;
-  specialties: string[];
+  telefone: string;
+  biografia: string;
+  especialidades: string[];
   avatar?: string;
-  rating: number;
-  salesVolume: number;
-  activeListings: number;
-  closedDeals: number;
-  joinedAt: string;
-  status: "active" | "inactive" | "on_leave";
+  avaliacao: number;
+  volumeVendas: number;
+  imoveisAtivos: number;
+  negociosFechados: number;
+  dataIngresso: string;
+  status: "ativo" | "inativo" | "ferias";
 }
 
-export interface AgentPerformance {
-  agentId: string;
-  period: string;
-  leadsAssigned: number;
-  leadsConverted: number;
-  propertiesSold: number;
-  revenue: number;
-  customerSatisfaction: number;
-  responseTime: number;
+export interface DesempenhoCorretor {
+  corretorId: string;
+  periodo: string;
+  leadsAtribuidos: number;
+  leadsConvertidos: number;
+  imoveisVendidos: number;
+  receita: number;
+  satisfacaoCliente: number;
+  tempoResposta: number;
 }
 
 export interface Lead {
   id: string;
-  clientName: string;
-  clientEmail: string;
-  clientPhone: string;
-  propertyId?: string;
-  status: "new" | "contacted" | "qualified" | "unqualified" | "converted" | "lost";
-  source: string;
-  notes?: string;
-  assignedAgentId?: string;
-  createdAt: string;
-  updatedAt: string;
+  nomeCliente: string;
+  emailCliente: string;
+  telefoneCliente: string;
+  empreendimentoId?: string;
+  status: "novo" | "contatado" | "qualificado" | "nao_qualificado" | "convertido" | "perdido";
+  origem: string;
+  observacoes?: string;
+  corretorResponsavelId?: string;
+  dataCriacao: string;
+  dataAtualizacao: string;
 }
 
-export interface Reservation {
+export interface Reserva {
   id: string;
-  propertyId: string;
-  property?: Property;
-  clientName: string;
-  clientEmail: string;
-  clientPhone: string;
-  startDate: string;
-  endDate: string;
-  status: "pending" | "confirmed" | "cancelled";
-  notes?: string;
-  agentId?: string;
-  visitType: "in_person" | "virtual";
-  createdAt: string;
-  createdBy: string;
+  empreendimentoId: string;
+  unidadeId: string;
+  empreendimento?: Empreendimento;
+  unidade?: Unidade;
+  nomeCliente: string;
+  emailCliente: string;
+  telefoneCliente: string;
+  dataInicio: string;
+  dataFim: string;
+  status: "pendente" | "confirmada" | "cancelada";
+  observacoes?: string;
+  corretorId?: string;
+  tipoVisita: "presencial" | "virtual";
+  dataCriacao: string;
+  criadoPor: string;
+  valorSinal?: number;
+  documentos?: string[];
 }
 
 export interface AuthContextType {
@@ -110,4 +139,26 @@ export interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   hasPermission: (requiredRole: UserRole | UserRole[]) => boolean;
+}
+
+// Interfaces para formulários e filtros
+export interface FiltroEmpreendimento {
+  tipoImovel?: string[];
+  cidade?: string[];
+  precoMin?: number;
+  precoMax?: number;
+  areaMin?: number;
+  areaMax?: number;
+  dormitoriosMin?: number;
+  banheirosMin?: number;
+  status?: string[];
+}
+
+export interface FormaPagamento {
+  id: string;
+  nome: string;
+  descricao: string;
+  parcelas: number;
+  taxaJuros?: number;
+  entradaMinima?: number;
 }
