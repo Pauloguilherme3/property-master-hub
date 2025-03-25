@@ -15,6 +15,8 @@ jobs:
         run: npm install
       - name: Build project
         run: npm run build
+      - name: Verify build output
+        run: ls -la dist # Verifica se o diretório dist foi gerado
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
