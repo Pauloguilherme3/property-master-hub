@@ -5,7 +5,7 @@ export enum UserRole {
   SUPERVISOR = "supervisor",
   ADMINISTRADOR = "administrador",
   GERENTE_PRODUTO = "gerente_produto",
-  FUNCIONARIO = "funcionario"  // Added for compatibility with existing code
+  FUNCIONARIO = "funcionario"
 }
 
 // English aliases for backward compatibility
@@ -62,6 +62,7 @@ export interface Empreendimento {
     lat: number;
     lng: number;
   };
+  tourVirtual?: string;
 }
 
 // English alias for backward compatibility
@@ -75,6 +76,7 @@ export interface FiltroEmpreendimento {
   precoMax?: number;
   dormitoriosMin?: number;
   areamin?: number;
+  areaMax?: number;
   status?: string;
 }
 
@@ -117,6 +119,8 @@ export interface Reserva {
   dataCriacao: string;
   criadoPor: string;
   valorSinal?: number;
+  empreendimento?: Empreendimento;
+  unidade?: Unidade;
 }
 
 // English aliases for backward compatibility

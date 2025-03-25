@@ -26,7 +26,7 @@ import {
   MoreHorizontal, 
   Plus 
 } from "lucide-react";
-import { Agent, UserRole, Corretor } from "@/types";
+import { Agent, UserRole, Corretor, MANAGER, ADMINISTRATOR } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -99,9 +99,9 @@ export default function Agents() {
   });
 
   const canManageAgents = hasPermission([
-    UserRole.GERENTE, 
+    MANAGER, 
     UserRole.SUPERVISOR, 
-    UserRole.ADMINISTRADOR
+    ADMINISTRATOR
   ]);
 
   const filteredAgents = agents.filter(agent => 

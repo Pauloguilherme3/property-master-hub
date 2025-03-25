@@ -12,14 +12,14 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Calendar as CalendarIcon, Search, Filter, Eye, CheckCircle, XCircle, Clock } from "lucide-react";
 import { mockEmpreendimentos, mockUnidades, mockReservas, getStatusReserva } from "@/utils/animations";
-import { Reserva } from "@/types";
+import { Reserva, Empreendimento, Unidade } from "@/types";
 
 const ReservasPage = () => {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("lista");
-  const [reservas, setReservas] = useState<Reserva[]>([]);
-  const [reservasFiltradas, setReservasFiltradas] = useState<Reserva[]>([]);
+  const [reservas, setReservas] = useState<(Reserva & { empreendimento?: Empreendimento, unidade?: Unidade })[]>([]);
+  const [reservasFiltradas, setReservasFiltradas] = useState<(Reserva & { empreendimento?: Empreendimento, unidade?: Unidade })[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("todos");

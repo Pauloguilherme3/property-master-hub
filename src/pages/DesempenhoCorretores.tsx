@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
@@ -59,7 +58,17 @@ const mockDadosDesempenho: DesempenhoCorretor[] = [
     imoveisVendidos: 3,
     receita: 45000,
     satisfacaoCliente: 4.7,
-    tempoResposta: 2.3
+    tempoResposta: 2.3,
+    
+    // English aliases
+    agentId: "1",
+    period: "Jan 2024",
+    leadsAssigned: 28,
+    leadsConverted: 8,
+    propertiesSold: 3,
+    revenue: 45000,
+    customerSatisfaction: 4.7,
+    responseTime: 2.3
   },
   {
     corretorId: "1",
@@ -69,7 +78,17 @@ const mockDadosDesempenho: DesempenhoCorretor[] = [
     imoveisVendidos: 4,
     receita: 62000,
     satisfacaoCliente: 4.8,
-    tempoResposta: 2.1
+    tempoResposta: 2.1,
+    
+    // English aliases
+    agentId: "1",
+    period: "Fev 2024",
+    leadsAssigned: 32,
+    leadsConverted: 10,
+    propertiesSold: 4,
+    revenue: 62000,
+    customerSatisfaction: 4.8,
+    responseTime: 2.1
   },
   {
     corretorId: "1",
@@ -79,7 +98,17 @@ const mockDadosDesempenho: DesempenhoCorretor[] = [
     imoveisVendidos: 5,
     receita: 78000,
     satisfacaoCliente: 4.9,
-    tempoResposta: 1.8
+    tempoResposta: 1.8,
+    
+    // English aliases
+    agentId: "1",
+    period: "Mar 2024",
+    leadsAssigned: 35,
+    leadsConverted: 12,
+    propertiesSold: 5,
+    revenue: 78000,
+    customerSatisfaction: 4.9,
+    responseTime: 1.8
   },
   {
     corretorId: "2",
@@ -89,7 +118,17 @@ const mockDadosDesempenho: DesempenhoCorretor[] = [
     imoveisVendidos: 1,
     receita: 18000,
     satisfacaoCliente: 4.2,
-    tempoResposta: 3.5
+    tempoResposta: 3.5,
+    
+    // English aliases
+    agentId: "2",
+    period: "Jan 2024",
+    leadsAssigned: 18,
+    leadsConverted: 4,
+    propertiesSold: 1,
+    revenue: 18000,
+    customerSatisfaction: 4.2,
+    responseTime: 3.5
   },
   {
     corretorId: "2",
@@ -99,7 +138,17 @@ const mockDadosDesempenho: DesempenhoCorretor[] = [
     imoveisVendidos: 2,
     receita: 35000,
     satisfacaoCliente: 4.5,
-    tempoResposta: 3.0
+    tempoResposta: 3.0,
+    
+    // English aliases
+    agentId: "2",
+    period: "Fev 2024",
+    leadsAssigned: 22,
+    leadsConverted: 6,
+    propertiesSold: 2,
+    revenue: 35000,
+    customerSatisfaction: 4.5,
+    responseTime: 3.0
   },
   {
     corretorId: "2",
@@ -109,7 +158,17 @@ const mockDadosDesempenho: DesempenhoCorretor[] = [
     imoveisVendidos: 3,
     receita: 47000,
     satisfacaoCliente: 4.6,
-    tempoResposta: 2.8
+    tempoResposta: 2.8,
+    
+    // English aliases
+    agentId: "2",
+    period: "Mar 2024",
+    leadsAssigned: 25,
+    leadsConverted: 8,
+    propertiesSold: 3,
+    revenue: 47000,
+    customerSatisfaction: 4.6,
+    responseTime: 2.8
   },
   {
     corretorId: "3",
@@ -119,7 +178,17 @@ const mockDadosDesempenho: DesempenhoCorretor[] = [
     imoveisVendidos: 6,
     receita: 95000,
     satisfacaoCliente: 4.9,
-    tempoResposta: 1.5
+    tempoResposta: 1.5,
+    
+    // English aliases
+    agentId: "3",
+    period: "Jan 2024",
+    leadsAssigned: 38,
+    leadsConverted: 15,
+    propertiesSold: 6,
+    revenue: 95000,
+    customerSatisfaction: 4.9,
+    responseTime: 1.5
   },
   {
     corretorId: "3",
@@ -129,7 +198,17 @@ const mockDadosDesempenho: DesempenhoCorretor[] = [
     imoveisVendidos: 8,
     receita: 125000,
     satisfacaoCliente: 4.9,
-    tempoResposta: 1.3
+    tempoResposta: 1.3,
+    
+    // English aliases
+    agentId: "3",
+    period: "Fev 2024",
+    leadsAssigned: 42,
+    leadsConverted: 18,
+    propertiesSold: 8,
+    revenue: 125000,
+    customerSatisfaction: 4.9,
+    responseTime: 1.3
   },
   {
     corretorId: "3",
@@ -139,7 +218,17 @@ const mockDadosDesempenho: DesempenhoCorretor[] = [
     imoveisVendidos: 9,
     receita: 142000,
     satisfacaoCliente: 5.0,
-    tempoResposta: 1.2
+    tempoResposta: 1.2,
+    
+    // English aliases
+    agentId: "3",
+    period: "Mar 2024",
+    leadsAssigned: 45,
+    leadsConverted: 20,
+    propertiesSold: 9,
+    revenue: 142000,
+    customerSatisfaction: 5.0,
+    responseTime: 1.2
   }
 ];
 
@@ -398,3 +487,4 @@ export default function DesempenhoCorretores() {
     </div>
   );
 }
+

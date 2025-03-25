@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -16,7 +17,7 @@ import {
   Plus, 
   Building 
 } from "lucide-react";
-import { Empreendimento, UserRole, FiltroEmpreendimento } from "@/types";
+import { Empreendimento, UserRole, FiltroEmpreendimento, MANAGER, ADMINISTRATOR, PRODUCT_MANAGER } from "@/types";
 import { mockEmpreendimentos } from "@/utils/animations";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
@@ -38,9 +39,9 @@ const PropertiesPage = () => {
   });
 
   const canManageProperties = hasPermission([
-    UserRole.GERENTE, 
-    UserRole.ADMINISTRADOR,
-    UserRole.GERENTE_PRODUTO
+    MANAGER, 
+    ADMINISTRATOR,
+    PRODUCT_MANAGER
   ]);
 
   const filteredProperties = properties.filter(property => {
