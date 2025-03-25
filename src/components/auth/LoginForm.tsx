@@ -46,7 +46,7 @@ export function LoginForm() {
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Firebase Not Initialized</AlertTitle>
             <AlertDescription>
-              The Firebase configuration is missing or invalid. Please make sure your environment variables are set correctly.
+              GitHub Actions secret keys may be missing or invalid. Make sure your GitHub repository has the correct secret keys configured.
             </AlertDescription>
           </Alert>
         )}
@@ -99,7 +99,7 @@ export function LoginForm() {
           {isFirebaseInitialized ? (
             <span>To test Firebase login, create an account in your Firebase project and enter the credentials here.</span>
           ) : (
-            <span>Please add your Firebase configuration in the .env file to enable authentication.</span>
+            <span>Por favor, verifique se as chaves do Firebase estão corretamente configuradas nos secrets do GitHub.</span>
           )}
         </div>
       </CardFooter>
