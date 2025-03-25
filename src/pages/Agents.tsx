@@ -34,7 +34,6 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 
-// Mock data - in a real app, this would come from an API
 const mockAgents: Corretor[] = [
   {
     id: "1",
@@ -91,20 +90,18 @@ export default function Agents() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Fetching agents data
   const { data: agents = [], isLoading } = useQuery({
     queryKey: ["agents"],
     queryFn: async () => {
-      // This would be an API call in a real application
       await new Promise(resolve => setTimeout(resolve, 1000));
       return mockAgents;
     }
   });
 
   const canManageAgents = hasPermission([
-    UserRole.MANAGER, 
+    UserRole.GERENTE, 
     UserRole.SUPERVISOR, 
-    UserRole.ADMINISTRATOR
+    UserRole.ADMINISTRADOR
   ]);
 
   const filteredAgents = agents.filter(agent => 
