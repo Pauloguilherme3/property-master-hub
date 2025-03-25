@@ -47,6 +47,7 @@ const PageTransition = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+// AppLayout component that requires AuthProvider to be present
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   

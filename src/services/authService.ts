@@ -12,7 +12,6 @@ import { auth } from "@/config/firebase";
 // Check if Firebase is initialized before operations
 const checkFirebaseInit = () => {
   if (!auth) {
-    // Instead of throwing, return a null state that can be handled
     console.error("Firebase authentication is not initialized");
     return false;
   }

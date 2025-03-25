@@ -14,11 +14,13 @@ import {
   BarChart3,
   Settings,
   ChevronRight,
+  AlertCircle,
   LucideIcon
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -36,7 +38,7 @@ interface NavItem {
 
 export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
   const location = useLocation();
-  const { hasPermission } = useAuth();
+  const { hasPermission, isFirebaseInitialized } = useAuth();
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
 
   // Close sidebar on mobile when navigating
@@ -143,10 +145,25 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
     }
   ];
 
-  const filteredNavItems = navItems.filter(item => {
-    if (!item.roles) return true;
-    return hasPermission(item.roles);
-  });
+  // Function to safely filter nav items when Firebase is not initialized
+  const getFilteredNavItems = () => {
+    if (!isFirebaseInitialized) {
+      // If Firebase is not initialized, only show Home and Login
+      return navItems.filter(item => item.href === "/" || item.href === "/login");
+    }
+    
+    return navItems.filter(item => {
+      if (!item.roles) return true;
+      try {
+        return hasPermission(item.roles);
+      } catch (error) {
+        console.error("Error checking permissions:", error);
+        return false;
+      }
+    });
+  };
+
+  const filteredNavItems = getFilteredNavItems();
 
   return (
     <div
@@ -165,18 +182,32 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
       
       <ScrollArea className="h-[calc(100vh-4rem)]">
         <div className="p-4">
+          {!isFirebaseInitialized && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Firebase não foi inicializado. A funcionalidade será limitada.
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <nav className="space-y-1">
             {filteredNavItems.map((item) => {
               const isActive = location.pathname === item.href || 
                 (item.submenu && item.submenu.some(subItem => location.pathname === subItem.href));
               
               if (item.submenu) {
-                const filteredSubmenu = item.submenu.filter(subItem => {
+                const filteredSubmenu = isFirebaseInitialized && item.submenu.filter(subItem => {
                   if (!subItem.roles) return true;
-                  return hasPermission(subItem.roles);
+                  try {
+                    return hasPermission(subItem.roles);
+                  } catch (error) {
+                    console.error("Error checking submenu permissions:", error);
+                    return false;
+                  }
                 });
                 
-                if (filteredSubmenu.length === 0) return null;
+                if (!filteredSubmenu || filteredSubmenu.length === 0) return null;
                 
                 const isSubmenuOpen = openSubmenu === item.title;
                 
