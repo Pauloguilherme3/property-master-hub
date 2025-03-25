@@ -11,9 +11,13 @@ import { Sidebar } from "./components/layout/Sidebar";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/Login";
+import RegisterPage from "./pages/Register";
+import PendingApproval from "./pages/PendingApproval";
+import UserManagement from "./pages/UserManagement";
 import Dashboard from "./pages/Dashboard";
 import Empreendimentos from "./pages/Empreendimentos";
 import EmpreendimentoDetalhe from "./pages/EmpreendimentoDetalhe";
+import EmpreendimentoPersonalizado from "./pages/EmpreendimentoPersonalizado";
 import EmpreendimentoMapa from "./pages/EmpreendimentoMapa";
 import Reservas from "./pages/Reservas";
 import Corretores from "./pages/Corretores";
@@ -87,6 +91,14 @@ const App = () => (
               element={<LoginPage />} 
             />
             <Route 
+              path="/registrar" 
+              element={<RegisterPage />} 
+            />
+            <Route 
+              path="/registro-pendente" 
+              element={<PendingApproval />} 
+            />
+            <Route 
               path="/" 
               element={
                 <AppLayout>
@@ -99,6 +111,14 @@ const App = () => (
               element={
                 <AppLayout>
                   <Dashboard />
+                </AppLayout>
+              } 
+            />
+            <Route 
+              path="/usuarios" 
+              element={
+                <AppLayout>
+                  <UserManagement />
                 </AppLayout>
               } 
             />
@@ -117,6 +137,10 @@ const App = () => (
                   <EmpreendimentoDetalhe />
                 </AppLayout>
               } 
+            />
+            <Route 
+              path="/e/:id" 
+              element={<EmpreendimentoPersonalizado />} 
             />
             <Route 
               path="/empreendimentos/mapa" 

@@ -1,8 +1,13 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { User, UserRole, AuthContextType } from "@/types";
+import { User, UserRole, UserStatus, AuthContextType } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
-import { onAuthChange, signIn as firebaseSignIn, signOut as firebaseSignOut } from "@/services/authService";
+import { 
+  onAuthChange, 
+  signIn as firebaseSignIn, 
+  signOut as firebaseSignOut,
+  signUp as firebaseSignUp
+} from "@/services/authService";
 import { getDocument, setDocument } from "@/services/dbService";
 import { User as FirebaseUser } from "firebase/auth";
 import { auth } from "@/config/firebase";
@@ -27,6 +32,8 @@ const mapFirebaseUser = async (firebaseUser: FirebaseUser): Promise<User> => {
       name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "User",
       email: firebaseUser.email || "",
       role: UserRole.CORRETOR, // Default role
+      status: UserStatus.PENDENTE, // Default status is pending
+      dataCadastro: new Date().toISOString(),
       avatar: firebaseUser.photoURL || "",
     };
     
@@ -43,6 +50,8 @@ const mapFirebaseUser = async (firebaseUser: FirebaseUser): Promise<User> => {
       name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "User",
       email: firebaseUser.email || "",
       role: UserRole.CORRETOR,
+      status: UserStatus.PENDENTE,
+      dataCadastro: new Date().toISOString(),
       avatar: firebaseUser.photoURL || "",
     };
   }
@@ -72,8 +81,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (firebaseUser) {
           try {
             const userData = await mapFirebaseUser(firebaseUser);
-            setUser(userData);
-            localStorage.setItem("user", JSON.stringify(userData));
+            
+            // Only set as authenticated if the user is active
+            if (userData.status === UserStatus.ATIVO) {
+              setUser(userData);
+              localStorage.setItem("user", JSON.stringify(userData));
+            } else {
+              // User is pending or inactive
+              setUser(null);
+              localStorage.removeItem("user");
+              
+              // Sign out if the user is not active
+              if (auth.currentUser) {
+                await firebaseSignOut();
+              }
+              
+              // Show notification if the user is not active
+              if (userData.status === UserStatus.PENDENTE) {
+                toast({
+                  title: "Cadastro pendente",
+                  description: "Seu cadastro está aguardando aprovação por um administrador.",
+                  duration: 5000,
+                });
+              } else if (userData.status === UserStatus.INATIVO) {
+                toast({
+                  variant: "destructive",
+                  title: "Acesso negado",
+                  description: "Seu cadastro foi desativado ou rejeitado.",
+                  duration: 5000,
+                });
+              }
+            }
           } catch (error) {
             console.error("Error mapping user data:", error);
             setUser(null);
@@ -96,7 +134,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         unsubscribe();
       }
     };
-  }, []);
+  }, [toast]);
 
   const login = async (email: string, password: string) => {
     if (!isFirebaseInitialized) {
@@ -113,6 +151,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const firebaseUser = await firebaseSignIn(email, password);
       const userData = await mapFirebaseUser(firebaseUser);
+      
+      // Check if the user is active
+      if (userData.status !== UserStatus.ATIVO) {
+        // Sign out if the user is not active
+        await firebaseSignOut();
+        
+        if (userData.status === UserStatus.PENDENTE) {
+          throw new Error("Seu cadastro está aguardando aprovação por um administrador.");
+        } else {
+          throw new Error("Seu cadastro foi desativado ou rejeitado.");
+        }
+      }
       
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
@@ -132,6 +182,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const register = async (email: string, password: string, name: string) => {
+    if (!isFirebaseInitialized) {
+      toast({
+        title: "Firebase não inicializado",
+        description: "O serviço de autenticação não está disponível no momento.",
+        variant: "destructive",
+      });
+      throw new Error("Firebase authentication is not initialized");
+    }
+
+    setIsLoading(true);
+    
+    try {
+      // Create user in Firebase
+      const firebaseUser = await firebaseSignUp(email, password, name);
+      
+      // Create user document in Firestore
+      const newUser: User = {
+        id: firebaseUser.uid,
+        nome: name,
+        name: name,
+        email: email,
+        role: UserRole.CORRETOR, // Default role
+        status: UserStatus.PENDENTE, // Default is pending
+        dataCadastro: new Date().toISOString(),
+        avatar: "",
+      };
+      
+      await setDocument("users", firebaseUser.uid, newUser);
+      
+      // Sign out after registration as user needs approval
+      await firebaseSignOut();
+      
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      throw error;
     }
   };
 
@@ -163,6 +253,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const hasPermission = (requiredRole: UserRole | UserRole[]): boolean => {
     if (!user) return false;
     
+    // Check if user is active
+    if (user.status !== UserStatus.ATIVO) return false;
+    
     if (Array.isArray(requiredRole)) {
       return requiredRole.some(role => user.role === role);
     }
@@ -178,6 +271,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         login,
         logout,
+        register,
         hasPermission,
         isFirebaseInitialized,
       }}

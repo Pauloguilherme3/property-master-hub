@@ -15,6 +15,8 @@ import {
   Settings,
   ChevronRight,
   AlertCircle,
+  Shield,
+  UserCog,
   LucideIcon
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -73,6 +75,25 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
       title: "Dashboard",
       href: "/dashboard",
       icon: LayoutDashboard
+    },
+    {
+      title: "Administração",
+      href: "/usuarios",
+      icon: UserCog,
+      badge: "Novo",
+      submenu: [
+        { 
+          title: "Gerenciar Usuários", 
+          href: "/usuarios", 
+          roles: [UserRole.ADMINISTRADOR] 
+        },
+        { 
+          title: "Configurações", 
+          href: "/configuracoes", 
+          roles: [UserRole.ADMINISTRADOR] 
+        }
+      ],
+      roles: [UserRole.ADMINISTRADOR]
     },
     {
       title: "Empreendimentos",
@@ -136,12 +157,6 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
       href: "/analytics",
       icon: BarChart3,
       roles: [UserRole.GERENTE, UserRole.SUPERVISOR, UserRole.GERENTE_PRODUTO, UserRole.ADMINISTRADOR]
-    },
-    {
-      title: "Configurações",
-      href: "/configuracoes",
-      icon: Settings,
-      roles: [UserRole.ADMINISTRADOR]
     }
   ];
 

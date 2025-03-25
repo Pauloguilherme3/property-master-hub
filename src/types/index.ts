@@ -1,4 +1,3 @@
-
 export enum UserRole {
   CORRETOR = "corretor",
   GERENTE = "gerente",
@@ -13,12 +12,21 @@ export const MANAGER = UserRole.GERENTE;
 export const ADMINISTRATOR = UserRole.ADMINISTRADOR;
 export const PRODUCT_MANAGER = UserRole.GERENTE_PRODUTO;
 
+export enum UserStatus {
+  PENDENTE = "pendente",
+  ATIVO = "ativo",
+  INATIVO = "inativo"
+}
+
 export interface User {
   id: string;
   nome: string;
   name: string;
   email: string;
   role: UserRole;
+  status: UserStatus;
+  dataCadastro: string;
+  telefone?: string;
   avatar?: string;
 }
 
@@ -29,6 +37,7 @@ export interface AuthContextType {
   isFirebaseInitialized: boolean;
   login: (email: string, password: string) => Promise<User>;
   logout: () => Promise<void>;
+  register: (email: string, password: string, name: string) => Promise<void>;
   hasPermission: (requiredRole: UserRole | UserRole[]) => boolean;
 }
 
