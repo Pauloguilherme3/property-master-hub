@@ -5,6 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { onAuthChange, signIn as firebaseSignIn, signOut as firebaseSignOut } from "@/services/authService";
 import { getDocument, setDocument } from "@/services/dbService";
 import { User as FirebaseUser } from "firebase/auth";
+import { auth } from "@/config/firebase";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -40,6 +41,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
 
   useEffect(() => {
+    // Check if Firebase is available
+    if (!auth) {
+      console.error("Firebase authentication is not initialized. Auth features won't work.");
+      setIsLoading(false);
+      return () => {};
+    }
+    
     const unsubscribe = onAuthChange(async (firebaseUser) => {
       setIsLoading(true);
       

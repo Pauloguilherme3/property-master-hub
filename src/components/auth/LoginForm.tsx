@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
+import { auth } from "@/config/firebase";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -13,6 +16,7 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const { toast } = useToast();
+  const isFirebaseInitialized = !!auth;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,6 +41,16 @@ export function LoginForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {!isFirebaseInitialized && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Firebase Not Initialized</AlertTitle>
+            <AlertDescription>
+              The Firebase configuration is missing or invalid. Please make sure your environment variables are set correctly.
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -48,6 +62,7 @@ export function LoginForm() {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="transition-all"
+              disabled={!isFirebaseInitialized}
             />
           </div>
           <div className="space-y-2">
@@ -67,12 +82,13 @@ export function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="transition-all"
+              disabled={!isFirebaseInitialized}
             />
           </div>
           <Button
             type="submit"
             className="w-full transition-all transform hover:translate-y-[-2px]"
-            disabled={isLoading}
+            disabled={isLoading || !isFirebaseInitialized}
           >
             {isLoading ? "Signing in..." : "Sign in"}
           </Button>
@@ -80,7 +96,11 @@ export function LoginForm() {
       </CardContent>
       <CardFooter className="flex flex-col space-y-4">
         <div className="text-sm text-muted-foreground text-center">
-          <span>To test Firebase login, create an account in your Firebase project and enter the credentials here.</span>
+          {isFirebaseInitialized ? (
+            <span>To test Firebase login, create an account in your Firebase project and enter the credentials here.</span>
+          ) : (
+            <span>Please add your Firebase configuration in the .env file to enable authentication.</span>
+          )}
         </div>
       </CardFooter>
     </Card>
