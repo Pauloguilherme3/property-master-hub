@@ -3,7 +3,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
 // Firebase configuration using GitHub Actions secrets
 const firebaseConfig = {
@@ -32,9 +32,23 @@ try {
     
     app = initializeApp(firebaseConfig);
     
-    // Only initialize analytics in browser environment
+    // Only initialize analytics if supported and in browser environment
     if (typeof window !== 'undefined') {
-      analytics = getAnalytics(app);
+      // Use async function for analytics to handle support check
+      const initAnalytics = async () => {
+        try {
+          if (await isSupported()) {
+            analytics = getAnalytics(app);
+            console.log("Firebase Analytics initialized");
+          } else {
+            console.log("Firebase Analytics not supported in this environment");
+          }
+        } catch (error) {
+          console.error("Error initializing Analytics:", error);
+        }
+      };
+      
+      initAnalytics();
     }
     
     auth = getAuth(app);
