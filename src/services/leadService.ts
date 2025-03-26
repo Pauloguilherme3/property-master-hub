@@ -1,18 +1,6 @@
 
-import { 
-  collection, 
-  doc, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  query, 
-  where, 
-  orderBy, 
-  getDocs,
-  Timestamp,
-  serverTimestamp
-} from "firebase/firestore";
-import { db } from "@/config/firebase";
+import { mongoDBService } from "@/services/mongoService";
+import { ObjectId } from "mongodb";
 
 export interface Lead {
   id?: string;
@@ -25,27 +13,45 @@ export interface Lead {
   status: "novo" | "contatado" | "qualificado" | "oportunidade" | "convertido" | "perdido";
   corretorId?: string;
   empreendimentoInteresse?: string[];
-  dataCriacao?: any;
-  dataAtualizacao?: any;
-  ultimoContato?: any;
-  proximoContato?: any;
+  dataCriacao?: Date;
+  dataAtualizacao?: Date;
+  ultimoContato?: Date;
+  proximoContato?: Date;
 }
 
-// Create a separate type for lead creation that makes status optional
-export type LeadCreate = Omit<Lead, "id" | "dataCriacao" | "dataAtualizacao"> & { 
-  status?: "novo" | "contatado" | "qualificado" | "oportunidade" | "convertido" | "perdido" 
+// Create a separate type for lead creation that makes all required fields optional for the form
+export type LeadCreate = Partial<Lead> & {
+  status?: "novo" | "contatado" | "qualificado" | "oportunidade" | "convertido" | "perdido";
 };
+
+// Type for MongoDB document
+type LeadDocument = Omit<Lead, "id"> & { _id?: ObjectId };
 
 export const addLead = async (leadData: LeadCreate) => {
   try {
-    const leadsCollection = collection(db, "leads");
-    const docRef = await addDoc(leadsCollection, {
-      ...leadData,
-      dataCriacao: serverTimestamp(),
-      dataAtualizacao: serverTimestamp(),
-      status: leadData.status || "novo"
-    });
-    return { id: docRef.id, ...leadData };
+    await mongoDBService.connect();
+    const collection = mongoDBService.getCollection<LeadDocument>("leads");
+    
+    const now = new Date();
+    const leadToInsert: LeadDocument = {
+      nome: leadData.nome || "",
+      email: leadData.email || "",
+      telefone: leadData.telefone || "",
+      origem: leadData.origem || "",
+      interesse: leadData.interesse || "",
+      observacoes: leadData.observacoes,
+      status: leadData.status || "novo",
+      corretorId: leadData.corretorId,
+      empreendimentoInteresse: leadData.empreendimentoInteresse,
+      dataCriacao: now,
+      dataAtualizacao: now
+    };
+    
+    const result = await collection.insertOne(leadToInsert);
+    return { 
+      id: result.insertedId.toString(),
+      ...leadToInsert
+    };
   } catch (error) {
     console.error("Error adding lead:", error);
     throw error;
@@ -54,11 +60,24 @@ export const addLead = async (leadData: LeadCreate) => {
 
 export const updateLead = async (id: string, leadData: Partial<Lead>) => {
   try {
-    const leadRef = doc(db, "leads", id);
-    await updateDoc(leadRef, {
+    await mongoDBService.connect();
+    const collection = mongoDBService.getCollection<LeadDocument>("leads");
+    
+    const updateData: Partial<LeadDocument> = {
       ...leadData,
-      dataAtualizacao: serverTimestamp()
-    });
+      dataAtualizacao: new Date()
+    };
+    
+    // Remove id field if present as MongoDB uses _id
+    if ('id' in updateData) {
+      delete updateData.id;
+    }
+    
+    await collection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updateData }
+    );
+    
     return { id, ...leadData };
   } catch (error) {
     console.error("Error updating lead:", error);
@@ -68,8 +87,10 @@ export const updateLead = async (id: string, leadData: Partial<Lead>) => {
 
 export const deleteLead = async (id: string) => {
   try {
-    const leadRef = doc(db, "leads", id);
-    await deleteDoc(leadRef);
+    await mongoDBService.connect();
+    const collection = mongoDBService.getCollection<LeadDocument>("leads");
+    
+    await collection.deleteOne({ _id: new ObjectId(id) });
     return true;
   } catch (error) {
     console.error("Error deleting lead:", error);
@@ -79,34 +100,40 @@ export const deleteLead = async (id: string) => {
 
 export const getLeads = async (filters: any = {}) => {
   try {
-    let leadsQuery = collection(db, "leads");
-    let queryConstraints = [];
+    await mongoDBService.connect();
+    const collection = mongoDBService.getCollection<LeadDocument>("leads");
+    
+    let query: any = {};
     
     if (filters.status) {
-      queryConstraints.push(where("status", "==", filters.status));
+      query.status = filters.status;
     }
     
     if (filters.corretorId) {
-      queryConstraints.push(where("corretorId", "==", filters.corretorId));
+      query.corretorId = filters.corretorId;
     }
     
     if (filters.origem) {
-      queryConstraints.push(where("origem", "==", filters.origem));
+      query.origem = filters.origem;
     }
     
-    // Always order by creation date
-    queryConstraints.push(orderBy("dataCriacao", "desc"));
+    const leads = await collection.find(query).sort({ dataCriacao: -1 }).toArray();
     
-    const q = query(leadsQuery, ...queryConstraints);
-    const querySnapshot = await getDocs(q);
-    
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      dataCriacao: doc.data().dataCriacao?.toDate() || null,
-      dataAtualizacao: doc.data().dataAtualizacao?.toDate() || null,
-      ultimoContato: doc.data().ultimoContato?.toDate() || null,
-      proximoContato: doc.data().proximoContato?.toDate() || null
+    return leads.map(lead => ({
+      id: lead._id?.toString(),
+      nome: lead.nome,
+      email: lead.email,
+      telefone: lead.telefone,
+      origem: lead.origem,
+      interesse: lead.interesse,
+      observacoes: lead.observacoes,
+      status: lead.status,
+      corretorId: lead.corretorId,
+      empreendimentoInteresse: lead.empreendimentoInteresse,
+      dataCriacao: lead.dataCriacao,
+      dataAtualizacao: lead.dataAtualizacao,
+      ultimoContato: lead.ultimoContato,
+      proximoContato: lead.proximoContato
     })) as Lead[];
   } catch (error) {
     console.error("Error getting leads:", error);
@@ -116,12 +143,20 @@ export const getLeads = async (filters: any = {}) => {
 
 export const registrarContatoLead = async (id: string, observacoes: string) => {
   try {
-    const leadRef = doc(db, "leads", id);
-    await updateDoc(leadRef, {
-      ultimoContato: serverTimestamp(),
-      observacoes: observacoes,
-      dataAtualizacao: serverTimestamp()
-    });
+    await mongoDBService.connect();
+    const collection = mongoDBService.getCollection<LeadDocument>("leads");
+    
+    await collection.updateOne(
+      { _id: new ObjectId(id) },
+      { 
+        $set: { 
+          ultimoContato: new Date(),
+          observacoes: observacoes,
+          dataAtualizacao: new Date()
+        } 
+      }
+    );
+    
     return true;
   } catch (error) {
     console.error("Error registering lead contact:", error);
@@ -131,12 +166,20 @@ export const registrarContatoLead = async (id: string, observacoes: string) => {
 
 export const atribuirCorretorLead = async (id: string, corretorId: string) => {
   try {
-    const leadRef = doc(db, "leads", id);
-    await updateDoc(leadRef, {
-      corretorId: corretorId,
-      dataAtualizacao: serverTimestamp(),
-      status: "contatado"
-    });
+    await mongoDBService.connect();
+    const collection = mongoDBService.getCollection<LeadDocument>("leads");
+    
+    await collection.updateOne(
+      { _id: new ObjectId(id) },
+      { 
+        $set: { 
+          corretorId: corretorId,
+          dataAtualizacao: new Date(),
+          status: "contatado"
+        } 
+      }
+    );
+    
     return true;
   } catch (error) {
     console.error("Error assigning lead to agent:", error);
