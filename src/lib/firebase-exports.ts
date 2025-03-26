@@ -12,9 +12,25 @@ export {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  updateProfile,
-  type User as FirebaseUser
+  updateProfile
 } from 'firebase/auth';
+
+// Define FirebaseUser type without trying to import User directly
+export type FirebaseUser = {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+  emailVerified: boolean;
+  providerData?: Array<{
+    providerId: string;
+    uid: string;
+    displayName: string | null;
+    email: string | null;
+    phoneNumber: string | null;
+    photoURL: string | null;
+  }>;
+};
 
 // Re-export from firebase/firestore
 export {
