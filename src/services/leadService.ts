@@ -1,3 +1,4 @@
+
 import { mongoDBService } from "@/services/mongoService";
 import { ObjectId } from "mongodb";
 
@@ -18,7 +19,7 @@ export interface Lead {
   proximoContato?: Date;
 }
 
-// Create a separate type for lead creation that makes all required fields optional for the form
+// Create a separate type for lead creation that makes all fields optional for the form
 export type LeadCreate = Partial<Lead>;
 
 // Type for MongoDB document
