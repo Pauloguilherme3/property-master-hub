@@ -1,6 +1,6 @@
 
 // This file serves as a barrel export for MongoDB modules
-// It provides browser-compatible MongoDB types and interfaces
+// It provides browser-compatible MongoDB types and interfaces without importing from 'mongodb'
 
 // Define MongoDB types for browser compatibility
 export interface ObjectId {
