@@ -1,11 +1,14 @@
 
 /// <reference types="vite/client" />
 
-// Add Firebase type references
-/// <reference types="@firebase/app-types" />
-/// <reference types="@firebase/auth-types" />
-/// <reference types="@firebase/firestore-types" />
-/// <reference types="@firebase/storage-types" />
+// Reference types for Firebase modules
+/// <reference types="firebase/app" />
+/// <reference types="firebase/auth" />
+/// <reference types="firebase/firestore" />
+/// <reference types="firebase/analytics" />
+
+// Reference types for MongoDB
+/// <reference types="mongodb" />
 
 // Create a global namespace for Firebase types
 declare global {
@@ -14,24 +17,6 @@ declare global {
     interface User {}
     interface Firestore {}
     interface Storage {}
-  }
-}
-
-// This explicitly declares the module 'firebase' to avoid the TS2688 error
-declare module 'firebase' {
-  export * from '@firebase/app-types';
-  
-  // Add re-exports for other Firebase services
-  export namespace auth {
-    export * from '@firebase/auth-types';
-  }
-  
-  export namespace firestore {
-    export * from '@firebase/firestore-types';
-  }
-  
-  export namespace storage {
-    export * from '@firebase/storage-types';
   }
 }
 
@@ -50,6 +35,11 @@ declare module 'firebase/firestore' {
 
 declare module 'firebase/analytics' {
   // Analytics types
+}
+
+// Explicitly declare module for mongodb
+declare module 'mongodb' {
+  export * from 'mongodb';
 }
 
 export {};

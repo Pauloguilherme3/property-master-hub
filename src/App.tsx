@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -28,11 +27,10 @@ import Clientes from "./pages/Clientes";
 import RelatoriosAnalises from "./pages/RelatoriosAnalises";
 import LeadsManagement from "./pages/LeadsManagement";
 import Properties from "./pages/Properties";
+import MongoDBTestPage from "./pages/MongoDBTest";
 
-// Create a new QueryClient instance
 const queryClient = new QueryClient();
 
-// Add page transition animation
 const PageTransition = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const [isFirstMount, setIsFirstMount] = useState(true);
@@ -53,7 +51,6 @@ const PageTransition = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-// AppLayout component that requires AuthProvider to be present
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
@@ -113,6 +110,14 @@ const App = () => (
               element={
                 <AppLayout>
                   <Dashboard />
+                </AppLayout>
+              } 
+            />
+            <Route 
+              path="/mongodb-test" 
+              element={
+                <AppLayout>
+                  <MongoDBTestPage />
                 </AppLayout>
               } 
             />
