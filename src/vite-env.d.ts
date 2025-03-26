@@ -1,12 +1,6 @@
 
 /// <reference types="vite/client" />
 
-// Reference types for Firebase modules
-/// <reference types="@firebase/app-types" />
-/// <reference types="@firebase/auth-types" />
-/// <reference types="@firebase/firestore-types" />
-/// <reference types="@firebase/storage-types" />
-
 // Create a global namespace for Firebase types
 declare namespace Firebase {
   interface Auth {}
@@ -17,12 +11,10 @@ declare namespace Firebase {
 
 // Explicitly declare module paths for Firebase
 declare module 'firebase/app' {
-  export * from '@firebase/app-types';
   export function initializeApp(options: any, name?: string): any;
 }
 
 declare module 'firebase/auth' {
-  export * from '@firebase/auth-types';
   export function getAuth(app?: any): any;
   export function createUserWithEmailAndPassword(auth: any, email: string, password: string): Promise<any>;
   export function signInWithEmailAndPassword(auth: any, email: string, password: string): Promise<any>;
@@ -39,7 +31,6 @@ declare module 'firebase/auth' {
 }
 
 declare module 'firebase/firestore' {
-  export * from '@firebase/firestore-types';
   export function getFirestore(app?: any): any;
   export function collection(firestore: any, path: string): any;
   export function doc(firestore: any, path: string, ...pathSegments: string[]): any;
