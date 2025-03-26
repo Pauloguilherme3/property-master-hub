@@ -11,7 +11,7 @@ import {
   where,
   DocumentData,
   QueryConstraint
-} from "firebase/firestore";
+} from "@/lib/firebase-exports";
 import { db } from "@/config/firebase";
 
 // Check if Firebase is initialized before operations

@@ -1,9 +1,12 @@
 
 // Firebase configuration
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getAnalytics, isSupported } from "firebase/analytics";
+import { 
+  initializeApp, 
+  getAuth, 
+  getFirestore, 
+  getAnalytics, 
+  isSupported 
+} from '@/lib/firebase-exports';
 
 // Firebase configuration using GitHub Actions secrets
 const firebaseConfig = {

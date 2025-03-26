@@ -1,6 +1,6 @@
 
 import { mongoDBService } from "@/services/mongoService";
-import { ObjectId } from "mongodb";
+import { ObjectId } from "@/lib/mongodb-exports";
 
 export interface Lead {
   id?: string;

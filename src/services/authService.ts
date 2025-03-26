@@ -4,11 +4,9 @@ import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
-  User as FirebaseUser,
-  updateProfile,
-  Auth,
-  AuthError
-} from "firebase/auth";
+  FirebaseUser,
+  updateProfile
+} from "@/lib/firebase-exports";
 import { auth } from "@/config/firebase";
 import { setDocument, getDocument, updateDocument } from "./dbService";
 import { User, UserRole, UserStatus } from "@/types";

@@ -1,5 +1,5 @@
 
-import { MongoClient, Db, Collection, ObjectId } from 'mongodb';
+import { MongoClient, Db, Collection } from '@/lib/mongodb-exports';
 
 // MongoDB connection class
 class MongoDBService {

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { User, UserRole, UserStatus, AuthContextType } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
@@ -9,31 +8,25 @@ import {
   signUp as firebaseSignUp
 } from "@/services/authService";
 import { getDocument, setDocument, updateDocument } from "@/services/dbService";
-import { User as FirebaseUser } from "firebase/auth";
+import { FirebaseUser } from "@/lib/firebase-exports";
 import { auth } from "@/config/firebase";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Admin email constant
 const ADMIN_EMAIL = "paulo100psy@gmail.com";
 
-// Helper function to check if email is admin
 const isAdminEmail = (email: string): boolean => {
   return email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 };
 
-// Helper function to convert Firebase user to our User type
 const mapFirebaseUser = async (firebaseUser: FirebaseUser): Promise<User> => {
   try {
     const email = firebaseUser.email || "";
     const isAdmin = isAdminEmail(email);
     
-    // Try to get user data from Firestore
     const userData = await getDocument("users", firebaseUser.uid);
     
-    // If user exists in Firestore
     if (userData) {
-      // If this is admin email, ensure correct role and status
       if (isAdmin && (userData.role !== UserRole.ADMINISTRADOR || userData.status !== UserStatus.ATIVO)) {
         const updatedUser = {
           ...userData,
@@ -41,7 +34,6 @@ const mapFirebaseUser = async (firebaseUser: FirebaseUser): Promise<User> => {
           status: UserStatus.ATIVO
         };
         
-        // Update the admin user in Firestore
         await updateDocument("users", firebaseUser.uid, {
           role: UserRole.ADMINISTRADOR,
           status: UserStatus.ATIVO
@@ -54,7 +46,6 @@ const mapFirebaseUser = async (firebaseUser: FirebaseUser): Promise<User> => {
       return userData as User;
     }
     
-    // Default user data if not found in Firestore
     const defaultUser: User = {
       id: firebaseUser.uid,
       nome: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "Usuário",
@@ -66,13 +57,11 @@ const mapFirebaseUser = async (firebaseUser: FirebaseUser): Promise<User> => {
       avatar: firebaseUser.photoURL || "",
     };
     
-    // Save default user to Firestore
     await setDocument("users", firebaseUser.uid, defaultUser);
     
     return defaultUser;
   } catch (error) {
     console.error("Error mapping Firebase user:", error);
-    // Fallback to basic user info from Firebase auth
     const email = firebaseUser.email || "";
     const isAdmin = isAdminEmail(email);
     
@@ -96,7 +85,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if Firebase is available
     if (!auth) {
       console.error("Firebase authentication is not initialized. Auth features won't work.");
       setIsFirebaseInitialized(false);
@@ -114,7 +102,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           try {
             const userData = await mapFirebaseUser(firebaseUser);
             
-            // Special case for admin email
             if (isAdminEmail(firebaseUser.email || "")) {
               console.log("Admin user detected, granting full access");
               setUser(userData);
@@ -123,21 +110,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               return;
             }
             
-            // Normal case: only set as authenticated if the user is active
             if (userData.status === UserStatus.ATIVO) {
               setUser(userData);
               localStorage.setItem("user", JSON.stringify(userData));
             } else {
-              // User is pending or inactive
               setUser(null);
               localStorage.removeItem("user");
               
-              // Sign out if the user is not active
               if (auth.currentUser) {
                 await firebaseSignOut();
               }
               
-              // Show notification if the user is not active
               if (userData.status === UserStatus.PENDENTE) {
                 toast({
                   title: "Cadastro pendente",
@@ -190,13 +173,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     
     try {
-      // Special case for admin email
       const isAdmin = isAdminEmail(email);
       
       const firebaseUser = await firebaseSignIn(email, password);
       const userData = await mapFirebaseUser(firebaseUser);
       
-      // Admin always gets access
       if (isAdmin) {
         setUser(userData);
         localStorage.setItem("user", JSON.stringify(userData));
@@ -209,9 +190,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return userData;
       }
       
-      // Check if the user is active for non-admins
       if (userData.status !== UserStatus.ATIVO) {
-        // Sign out if the user is not active
         await firebaseSignOut();
         
         if (userData.status === UserStatus.PENDENTE) {
@@ -255,24 +234,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     
     try {
-      // Create user in Firebase
       const firebaseUser = await firebaseSignUp(email, password, name);
       
-      // Create user document in Firestore
       const newUser: User = {
         id: firebaseUser.uid,
         nome: name,
         name: name,
         email: email,
-        role: UserRole.CORRETOR, // Default role
-        status: UserStatus.PENDENTE, // Default is pending
+        role: UserRole.CORRETOR,
+        status: UserStatus.PENDENTE,
         dataCadastro: new Date().toISOString(),
         avatar: "",
       };
       
       await setDocument("users", firebaseUser.uid, newUser);
       
-      // Sign out after registration as user needs approval
       await firebaseSignOut();
       
       setIsLoading(false);
@@ -310,7 +286,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const hasPermission = (requiredRole: UserRole | UserRole[]): boolean => {
     if (!user) return false;
     
-    // Check if user is active
     if (user.status !== UserStatus.ATIVO) return false;
     
     if (Array.isArray(requiredRole)) {
