@@ -57,7 +57,15 @@ import {
   UserCheck,
   MessageSquare
 } from "lucide-react";
-import { getLeads, addLead, updateLead, Lead, registrarContatoLead, atribuirCorretorLead } from "@/services/leadService";
+import { 
+  getLeads, 
+  addLead, 
+  updateLead, 
+  Lead, 
+  LeadCreate, 
+  registrarContatoLead, 
+  atribuirCorretorLead 
+} from "@/services/leadService";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserRole } from "@/types";
 
@@ -69,7 +77,7 @@ const leadFormSchema = z.object({
   origem: z.string().min(1, { message: "Origem é obrigatória" }),
   interesse: z.string().min(1, { message: "Interesse é obrigatório" }),
   observacoes: z.string().optional(),
-  status: z.enum(["novo", "contatado", "qualificado", "oportunidade", "convertido", "perdido"])
+  status: z.enum(["novo", "contatado", "qualificado", "oportunidade", "convertido", "perdido"]).optional()
 });
 
 const LeadsManagement = () => {

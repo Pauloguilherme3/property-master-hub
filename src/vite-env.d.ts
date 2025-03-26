@@ -35,4 +35,21 @@ declare module 'firebase' {
   }
 }
 
+// Explicitly declare module paths for Firebase
+declare module 'firebase/app' {
+  export * from '@firebase/app-types';
+}
+
+declare module 'firebase/auth' {
+  export * from '@firebase/auth-types';
+}
+
+declare module 'firebase/firestore' {
+  export * from '@firebase/firestore-types';
+}
+
+declare module 'firebase/analytics' {
+  // Analytics types
+}
+
 export {};

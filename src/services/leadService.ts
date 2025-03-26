@@ -31,7 +31,12 @@ export interface Lead {
   proximoContato?: any;
 }
 
-export const addLead = async (leadData: Omit<Lead, "id" | "dataCriacao" | "dataAtualizacao">) => {
+// Create a separate type for lead creation that makes status optional
+export type LeadCreate = Omit<Lead, "id" | "dataCriacao" | "dataAtualizacao"> & { 
+  status?: "novo" | "contatado" | "qualificado" | "oportunidade" | "convertido" | "perdido" 
+};
+
+export const addLead = async (leadData: LeadCreate) => {
   try {
     const leadsCollection = collection(db, "leads");
     const docRef = await addDoc(leadsCollection, {
