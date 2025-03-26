@@ -1,6 +1,6 @@
 
 const express = require('express');
-const { MongoClient, ObjectId ,ServerApiVersion } = require('mongodb');
+const { MongoClient, ObjectId, ServerApiVersion } = require('mongodb');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
@@ -24,6 +24,7 @@ async function connectToMongoDB() {
     const uri = process.env.MONGODB_URI;
     if (!uri) {
       throw new Error('MONGODB_URI is not defined in environment variables');
+      console.log(uri);
     }
 
     client = new MongoClient(uri,{
@@ -38,7 +39,7 @@ async function connectToMongoDB() {
     console.log('Connected to MongoDB');
   } catch (error) {
     console.error('Failed to connect to MongoDB:', error);
-    process.exit(1);
+    await client.close();
   }
 }
 
