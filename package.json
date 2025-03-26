@@ -11,6 +11,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@firebase/app-types": "^0.9.3",
+    "@firebase/auth-types": "^0.13.0",
+    "@firebase/firestore-types": "^3.0.3",
+    "@firebase/storage-types": "^0.8.3",
     "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",

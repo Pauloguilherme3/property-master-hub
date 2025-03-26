@@ -6,6 +6,7 @@ import {
   onAuthStateChanged,
   User as FirebaseUser,
   updateProfile,
+  Auth,
   AuthError
 } from "firebase/auth";
 import { auth } from "@/config/firebase";
