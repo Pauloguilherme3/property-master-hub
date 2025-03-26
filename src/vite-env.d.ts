@@ -55,7 +55,6 @@ declare module 'firebase/analytics' {
   export function isSupported(): Promise<boolean>;
 }
 
-// No longer need explicit mongodb module declarations
-// as we're now using our own interfaces
+// MongoDB custom interfaces - no need to try to import from 'mongodb'
 
 export {};
