@@ -17,4 +17,22 @@ declare global {
   }
 }
 
+// This explicitly declares the module 'firebase' to avoid the TS2688 error
+declare module 'firebase' {
+  export * from '@firebase/app-types';
+  
+  // Add re-exports for other Firebase services
+  export namespace auth {
+    export * from '@firebase/auth-types';
+  }
+  
+  export namespace firestore {
+    export * from '@firebase/firestore-types';
+  }
+  
+  export namespace storage {
+    export * from '@firebase/storage-types';
+  }
+}
+
 export {};
