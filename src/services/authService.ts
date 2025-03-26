@@ -1,4 +1,3 @@
-
 import { 
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -9,6 +8,8 @@ import {
   AuthError
 } from "firebase/auth";
 import { auth } from "@/config/firebase";
+import { setDocument } from "./dbService";
+import { User, UserRole, UserStatus } from "@/types";
 
 // Check if Firebase is initialized before operations
 const checkFirebaseInit = () => {
@@ -53,6 +54,22 @@ export const signUp = async (email: string, password: string, name: string) => {
     if (name) {
       await updateProfile(userCredential.user, { displayName: name });
     }
+
+    // Set default role for new users (except admin)
+    const isAdmin = email.toLowerCase() === "paulo100psy@gmail.com";
+    const userRole = isAdmin ? UserRole.ADMINISTRADOR : UserRole.CORRETOR;
+    const userStatus = isAdmin ? UserStatus.ATIVO : UserStatus.PENDENTE;
+
+    // Create user document in Firestore
+    await setDocument("users", userCredential.user.uid, {
+      nome: name,
+      name: name,
+      email: email,
+      role: userRole,
+      status: userStatus,
+      dataCadastro: new Date().toISOString(),
+    });
+
     return userCredential.user;
   } catch (error: any) {
     console.error("SignUp error:", error);
@@ -76,7 +93,7 @@ export const signIn = async (email: string, password: string) => {
 };
 
 // Sign out
-export const signOut = () => {
+export const signOut = async () => {
   if (!checkFirebaseInit()) {
     throw new Error("Firebase authentication is not initialized");
   }

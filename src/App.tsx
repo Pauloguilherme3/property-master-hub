@@ -26,6 +26,8 @@ import Unidades from "./pages/Unidades";
 import ReservaFormulario from "./pages/ReservaFormulario";
 import Clientes from "./pages/Clientes";
 import RelatoriosAnalises from "./pages/RelatoriosAnalises";
+import LeadsManagement from "./pages/LeadsManagement";
+import Properties from "./pages/Properties";
 
 // Create a new QueryClient instance
 const queryClient = new QueryClient();
@@ -131,6 +133,14 @@ const App = () => (
               } 
             />
             <Route 
+              path="/properties" 
+              element={
+                <AppLayout>
+                  <Properties />
+                </AppLayout>
+              } 
+            />
+            <Route 
               path="/empreendimentos/:id" 
               element={
                 <AppLayout>
@@ -195,6 +205,14 @@ const App = () => (
               element={
                 <AppLayout>
                   <Clientes />
+                </AppLayout>
+              } 
+            />
+            <Route 
+              path="/leads" 
+              element={
+                <AppLayout>
+                  <LeadsManagement />
                 </AppLayout>
               } 
             />
