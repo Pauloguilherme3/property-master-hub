@@ -1,6 +1,6 @@
 
 const express = require('express');
-const { MongoClient, ObjectId } = require('mongodb');
+const { MongoClient, ObjectId ,ServerApiVersion } = require('mongodb');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
@@ -26,9 +26,15 @@ async function connectToMongoDB() {
       throw new Error('MONGODB_URI is not defined in environment variables');
     }
 
-    client = new MongoClient(uri);
+    client = new MongoClient(uri,{
+      serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+      }
+    });
     await client.connect();
-    db = client.db(process.env.MONGODB_DB_NAME || 'crm-imobiliario');
+    db = client.db(process.env.MONGODB_DB_NAME || 'admin').command({ping:1});
     console.log('Connected to MongoDB');
   } catch (error) {
     console.error('Failed to connect to MongoDB:', error);
