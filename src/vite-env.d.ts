@@ -18,26 +18,40 @@ declare namespace Firebase {
 // Explicitly declare module paths for Firebase
 declare module 'firebase/app' {
   export * from '@firebase/app-types';
+  export function initializeApp(options: any, name?: string): any;
 }
 
 declare module 'firebase/auth' {
   export * from '@firebase/auth-types';
+  export function getAuth(app?: any): any;
+  export function createUserWithEmailAndPassword(auth: any, email: string, password: string): Promise<any>;
+  export function signInWithEmailAndPassword(auth: any, email: string, password: string): Promise<any>;
+  export function signOut(auth: any): Promise<void>;
+  export function onAuthStateChanged(auth: any, nextOrObserver: any): () => void;
+  export function updateProfile(user: any, profile: any): Promise<void>;
 }
 
 declare module 'firebase/firestore' {
   export * from '@firebase/firestore-types';
+  export function getFirestore(app?: any): any;
+  export function collection(firestore: any, path: string): any;
+  export function doc(firestore: any, path: string, ...pathSegments: string[]): any;
+  export function setDoc(reference: any, data: any, options?: any): Promise<void>;
+  export function getDoc(reference: any): Promise<any>;
+  export function getDocs(query: any): Promise<any>;
+  export function updateDoc(reference: any, data: any): Promise<void>;
+  export function deleteDoc(reference: any): Promise<void>;
+  export function query(query: any, ...queryConstraints: any[]): any;
+  export function where(fieldPath: string, opStr: string, value: any): any;
 }
 
 declare module 'firebase/analytics' {
-  // Analytics types
+  export function getAnalytics(app?: any): any;
+  export function isSupported(): Promise<boolean>;
 }
 
 // Explicitly declare module for mongodb
 declare module 'mongodb' {
-  export * from 'mongodb';
-  
-  export interface CollectionOptions {}
-  
   export class MongoClient {
     constructor(uri: string, options?: any);
     connect(): Promise<MongoClient>;
@@ -46,7 +60,7 @@ declare module 'mongodb' {
   }
   
   export class Db {
-    collection<T>(name: string, options?: CollectionOptions): Collection<T>;
+    collection<T>(name: string, options?: any): Collection<T>;
   }
   
   export class Collection<T> {
