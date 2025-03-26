@@ -1,3 +1,4 @@
+
 import { 
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -8,7 +9,7 @@ import {
   AuthError
 } from "firebase/auth";
 import { auth } from "@/config/firebase";
-import { setDocument } from "./dbService";
+import { setDocument, getDocument, updateDocument } from "./dbService";
 import { User, UserRole, UserStatus } from "@/types";
 
 // Check if Firebase is initialized before operations
@@ -43,6 +44,14 @@ const handleAuthError = (error: any): string => {
   }
 };
 
+// Define admin email with exact match
+const ADMIN_EMAIL = "paulo100psy@gmail.com";
+
+// Check if email is admin
+const isAdminEmail = (email: string): boolean => {
+  return email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+};
+
 // Sign up with email and password
 export const signUp = async (email: string, password: string, name: string) => {
   if (!checkFirebaseInit()) {
@@ -55,8 +64,8 @@ export const signUp = async (email: string, password: string, name: string) => {
       await updateProfile(userCredential.user, { displayName: name });
     }
 
-    // Set default role for new users (except admin)
-    const isAdmin = email.toLowerCase() === "paulo100psy@gmail.com";
+    // Set default role for new users
+    const isAdmin = isAdminEmail(email);
     const userRole = isAdmin ? UserRole.ADMINISTRADOR : UserRole.CORRETOR;
     const userStatus = isAdmin ? UserStatus.ATIVO : UserStatus.PENDENTE;
 
@@ -84,7 +93,26 @@ export const signIn = async (email: string, password: string) => {
   }
   
   try {
+    // Check if the user is the admin email
+    const isAdmin = isAdminEmail(email);
+    
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    
+    // If admin email, ensure they have admin status in Firestore
+    if (isAdmin) {
+      const userData = await getDocument("users", userCredential.user.uid);
+      if (userData) {
+        // Ensure admin has proper role and active status
+        if (userData.role !== UserRole.ADMINISTRADOR || userData.status !== UserStatus.ATIVO) {
+          await updateDocument("users", userCredential.user.uid, {
+            role: UserRole.ADMINISTRADOR,
+            status: UserStatus.ATIVO
+          });
+          console.log("Admin privileges enforced for admin email");
+        }
+      }
+    }
+    
     return userCredential.user;
   } catch (error: any) {
     console.error("SignIn error:", error);

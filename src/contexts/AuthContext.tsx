@@ -8,20 +8,49 @@ import {
   signOut as firebaseSignOut,
   signUp as firebaseSignUp
 } from "@/services/authService";
-import { getDocument, setDocument } from "@/services/dbService";
+import { getDocument, setDocument, updateDocument } from "@/services/dbService";
 import { User as FirebaseUser } from "firebase/auth";
 import { auth } from "@/config/firebase";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Admin email constant
+const ADMIN_EMAIL = "paulo100psy@gmail.com";
+
+// Helper function to check if email is admin
+const isAdminEmail = (email: string): boolean => {
+  return email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+};
+
 // Helper function to convert Firebase user to our User type
 const mapFirebaseUser = async (firebaseUser: FirebaseUser): Promise<User> => {
   try {
+    const email = firebaseUser.email || "";
+    const isAdmin = isAdminEmail(email);
+    
     // Try to get user data from Firestore
     const userData = await getDocument("users", firebaseUser.uid);
     
-    // If user exists in Firestore, return that data
+    // If user exists in Firestore
     if (userData) {
+      // If this is admin email, ensure correct role and status
+      if (isAdmin && (userData.role !== UserRole.ADMINISTRADOR || userData.status !== UserStatus.ATIVO)) {
+        const updatedUser = {
+          ...userData,
+          role: UserRole.ADMINISTRADOR,
+          status: UserStatus.ATIVO
+        };
+        
+        // Update the admin user in Firestore
+        await updateDocument("users", firebaseUser.uid, {
+          role: UserRole.ADMINISTRADOR,
+          status: UserStatus.ATIVO
+        });
+        
+        console.log("Admin privileges enforced for admin user");
+        return updatedUser as User;
+      }
+      
       return userData as User;
     }
     
@@ -30,9 +59,9 @@ const mapFirebaseUser = async (firebaseUser: FirebaseUser): Promise<User> => {
       id: firebaseUser.uid,
       nome: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "Usuário",
       name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "User",
-      email: firebaseUser.email || "",
-      role: UserRole.CORRETOR, // Default role
-      status: UserStatus.PENDENTE, // Default status is pending
+      email: email,
+      role: isAdmin ? UserRole.ADMINISTRADOR : UserRole.CORRETOR,
+      status: isAdmin ? UserStatus.ATIVO : UserStatus.PENDENTE,
       dataCadastro: new Date().toISOString(),
       avatar: firebaseUser.photoURL || "",
     };
@@ -44,13 +73,16 @@ const mapFirebaseUser = async (firebaseUser: FirebaseUser): Promise<User> => {
   } catch (error) {
     console.error("Error mapping Firebase user:", error);
     // Fallback to basic user info from Firebase auth
+    const email = firebaseUser.email || "";
+    const isAdmin = isAdminEmail(email);
+    
     return {
       id: firebaseUser.uid,
       nome: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "Usuário",
       name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "User",
-      email: firebaseUser.email || "",
-      role: UserRole.CORRETOR,
-      status: UserStatus.PENDENTE,
+      email: email,
+      role: isAdmin ? UserRole.ADMINISTRADOR : UserRole.CORRETOR,
+      status: isAdmin ? UserStatus.ATIVO : UserStatus.PENDENTE,
       dataCadastro: new Date().toISOString(),
       avatar: firebaseUser.photoURL || "",
     };
@@ -82,7 +114,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           try {
             const userData = await mapFirebaseUser(firebaseUser);
             
-            // Only set as authenticated if the user is active
+            // Special case for admin email
+            if (isAdminEmail(firebaseUser.email || "")) {
+              console.log("Admin user detected, granting full access");
+              setUser(userData);
+              localStorage.setItem("user", JSON.stringify(userData));
+              setIsLoading(false);
+              return;
+            }
+            
+            // Normal case: only set as authenticated if the user is active
             if (userData.status === UserStatus.ATIVO) {
               setUser(userData);
               localStorage.setItem("user", JSON.stringify(userData));
@@ -149,10 +190,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     
     try {
+      // Special case for admin email
+      const isAdmin = isAdminEmail(email);
+      
       const firebaseUser = await firebaseSignIn(email, password);
       const userData = await mapFirebaseUser(firebaseUser);
       
-      // Check if the user is active
+      // Admin always gets access
+      if (isAdmin) {
+        setUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData));
+        
+        toast({
+          title: "Login bem-sucedido",
+          description: `Bem-vindo, Administrador!`,
+        });
+        
+        return userData;
+      }
+      
+      // Check if the user is active for non-admins
       if (userData.status !== UserStatus.ATIVO) {
         // Sign out if the user is not active
         await firebaseSignOut();
