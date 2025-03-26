@@ -4,7 +4,6 @@
   "description": "Backend server for CRM Imobiliário",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
     "dev": "nodemon index.js"
   },
   "dependencies": {
