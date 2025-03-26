@@ -13,7 +13,7 @@ export {
   signOut,
   onAuthStateChanged,
   updateProfile,
-  User as FirebaseUser
+  type User as FirebaseUser
 } from 'firebase/auth';
 
 // Re-export from firebase/firestore
@@ -28,8 +28,8 @@ export {
   deleteDoc,
   query,
   where,
-  DocumentData,
-  QueryConstraint
+  type DocumentData,
+  type QueryConstraint
 } from 'firebase/firestore';
 
 // Re-export from firebase/analytics

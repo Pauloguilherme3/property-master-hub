@@ -29,6 +29,13 @@ declare module 'firebase/auth' {
   export function signOut(auth: any): Promise<void>;
   export function onAuthStateChanged(auth: any, nextOrObserver: any): () => void;
   export function updateProfile(user: any, profile: any): Promise<void>;
+  export interface User {
+    uid: string;
+    email: string | null;
+    displayName: string | null;
+    photoURL: string | null;
+    emailVerified: boolean;
+  }
 }
 
 declare module 'firebase/firestore' {
@@ -43,6 +50,13 @@ declare module 'firebase/firestore' {
   export function deleteDoc(reference: any): Promise<void>;
   export function query(query: any, ...queryConstraints: any[]): any;
   export function where(fieldPath: string, opStr: string, value: any): any;
+  export interface DocumentData {
+    [field: string]: any;
+  }
+  export interface QueryConstraint {
+    type: string;
+    _apply(query: any): any;
+  }
 }
 
 declare module 'firebase/analytics' {
