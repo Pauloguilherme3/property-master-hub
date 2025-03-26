@@ -19,9 +19,18 @@ const MongoDBTestPage = () => {
     try {
       await mongoDBService.connect();
       setIsConnected(mongoDBService.isConnectedToDB());
+      
+      // Test connection by trying to get some data
+      if (mongoDBService.isConnectedToDB()) {
+        const collection = mongoDBService.getCollection("test");
+        await collection.find().toArray();
+      }
+      
       toast({
         title: "Conectado com sucesso",
-        description: "A conexão com o MongoDB foi estabelecida.",
+        description: import.meta.env.VITE_MONGODB_API_URL 
+          ? "A conexão com a API do MongoDB foi estabelecida."
+          : "Conectado no modo simulado (mock).",
         variant: "default",
       });
     } catch (err) {
@@ -97,8 +106,12 @@ const MongoDBTestPage = () => {
             <h3 className="font-medium mb-2">Instruções:</h3>
             <ol className="list-decimal ml-5 space-y-1 text-sm">
               <li>Certifique-se de que suas variáveis de ambiente estão configuradas corretamente</li>
-              <li>A string de conexão MongoDB deve ser fornecida na variável <code className="bg-blue-100 px-1 rounded">VITE_MONGODB_KEY_PUBLIC</code></li>
-              <li>Clique no botão "Conectar" para testar a conexão com o MongoDB</li>
+              <li>
+                {import.meta.env.VITE_MONGODB_API_URL 
+                  ? "A URL da API MongoDB deve ser fornecida na variável VITE_MONGODB_API_URL" 
+                  : "Sem API configurada - operando no modo simulado"}
+              </li>
+              <li>Clique no botão "Conectar" para testar a conexão</li>
             </ol>
           </div>
         </CardContent>

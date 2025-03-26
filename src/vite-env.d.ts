@@ -55,38 +55,7 @@ declare module 'firebase/analytics' {
   export function isSupported(): Promise<boolean>;
 }
 
-// Explicitly declare module for mongodb
-declare module 'mongodb' {
-  export class MongoClient {
-    constructor(uri: string, options?: any);
-    connect(): Promise<MongoClient>;
-    db(name?: string): Db;
-    close(): Promise<void>;
-  }
-  
-  export class Db {
-    collection<T>(name: string, options?: any): Collection<T>;
-  }
-  
-  export class Collection<T> {
-    insertOne(doc: T): Promise<{ insertedId: ObjectId }>;
-    find(query?: any): Cursor<T>;
-    findOne(query?: any): Promise<T | null>;
-    updateOne(filter: any, update: any): Promise<any>;
-    deleteOne(filter: any): Promise<any>;
-  }
-  
-  export class Cursor<T> {
-    toArray(): Promise<T[]>;
-    sort(sort: any): Cursor<T>;
-    limit(limit: number): Cursor<T>;
-    skip(skip: number): Cursor<T>;
-  }
-  
-  export class ObjectId {
-    constructor(id?: string);
-    toString(): string;
-  }
-}
+// No longer need explicit mongodb module declarations
+// as we're now using our own interfaces
 
 export {};
