@@ -9,7 +9,7 @@ const path = require('path');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 27017;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
@@ -24,22 +24,35 @@ async function connectToMongoDB() {
     const uri = process.env.MONGODB_URI;
     if (!uri) {
       throw new Error('MONGODB_URI is not defined in environment variables');
-      console.log(uri);
     }
 
-    client = new MongoClient(uri,{
+    console.log("Connecting to MongoDB...");
+    
+    client = new MongoClient(uri, {
       serverApi: {
         version: ServerApiVersion.v1,
         strict: true,
         deprecationErrors: true,
       }
     });
+    
     await client.connect();
-    db = client.db(process.env.MONGODB_DB_NAME || 'admin').command({ping:1});
-    console.log('Connected to MongoDB');
+    console.log("Connected to MongoDB client");
+    
+    const dbName = process.env.MONGODB_DB_NAME || 'crm-imobiliario';
+    db = client.db(dbName);
+    
+    // Test the connection with a simple command
+    await db.command({ ping: 1 });
+    console.log(`Connected successfully to MongoDB database: ${dbName}`);
   } catch (error) {
     console.error('Failed to connect to MongoDB:', error);
-    await client.close();
+    if (client) {
+      await client.close();
+      client = null;
+    }
+    // Don't exit the process, allow the server to start anyway
+    // This allows us to see the error details in the logs
   }
 }
 
@@ -51,6 +64,10 @@ app.get('/ping', (req, res) => {
 // API Routes
 app.get('/api/collections/:collection/find', async (req, res) => {
   try {
+    if (!db) {
+      return res.status(503).json({ error: 'Database connection not established' });
+    }
+    
     const collectionName = req.params.collection;
     const collection = db.collection(collectionName);
     
@@ -83,6 +100,10 @@ app.get('/api/collections/:collection/find', async (req, res) => {
 
 app.get('/api/collections/:collection/findOne', async (req, res) => {
   try {
+    if (!db) {
+      return res.status(503).json({ error: 'Database connection not established' });
+    }
+    
     const collectionName = req.params.collection;
     const collection = db.collection(collectionName);
     
@@ -106,6 +127,10 @@ app.get('/api/collections/:collection/findOne', async (req, res) => {
 
 app.post('/api/collections/:collection', async (req, res) => {
   try {
+    if (!db) {
+      return res.status(503).json({ error: 'Database connection not established' });
+    }
+    
     const collectionName = req.params.collection;
     const collection = db.collection(collectionName);
     
@@ -119,6 +144,10 @@ app.post('/api/collections/:collection', async (req, res) => {
 
 app.patch('/api/collections/:collection/updateOne', async (req, res) => {
   try {
+    if (!db) {
+      return res.status(503).json({ error: 'Database connection not established' });
+    }
+    
     const collectionName = req.params.collection;
     const collection = db.collection(collectionName);
     
@@ -139,6 +168,10 @@ app.patch('/api/collections/:collection/updateOne', async (req, res) => {
 
 app.delete('/api/collections/:collection/deleteOne', async (req, res) => {
   try {
+    if (!db) {
+      return res.status(503).json({ error: 'Database connection not established' });
+    }
+    
     const collectionName = req.params.collection;
     const collection = db.collection(collectionName);
     
@@ -168,18 +201,24 @@ if (process.env.NODE_ENV === 'production') {
 
 // Start server
 async function startServer() {
-  await connectToMongoDB();
-  
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-  
-  // Handle graceful shutdown
-  process.on('SIGINT', async () => {
-    console.log('Closing MongoDB connection and shutting down server');
-    if (client) await client.close();
-    process.exit(0);
-  });
+  try {
+    // Try to connect to MongoDB, but don't block server startup if it fails
+    await connectToMongoDB();
+    
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+    
+    // Handle graceful shutdown
+    process.on('SIGINT', async () => {
+      console.log('Closing MongoDB connection and shutting down server');
+      if (client) await client.close();
+      process.exit(0);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
 }
 
-startServer().catch(console.error);
+startServer();
