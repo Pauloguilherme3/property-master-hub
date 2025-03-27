@@ -1,8 +1,7 @@
-
 import { 
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut as firebaseSignOut,
+  firebaseSignOut,
   onAuthStateChanged,
   FirebaseUser,
   updateProfile
