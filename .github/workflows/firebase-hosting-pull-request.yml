@@ -30,6 +30,7 @@ jobs:
           echo "VITE_FIREBASE_APP_ID=${{ secrets.REACT_APP_FIREBASE_APP_ID }}" >> .env
           echo "VITE_FIREBASE_MEASUREMENT_ID=${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}" >> .env
           echo "VITE_MONGODB_KEY_PUBLIC=${{ secrets.VITE_MONGODB_KEY_PUBLIC }}" >> .env
+          echo "VITE_GOOGLE_SHEETS_API_KEY=${{ secrets.GOOGLE_SHEETS_API_KEY }}" >> .env
       - name: Build project
         run: npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0

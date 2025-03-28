@@ -11,6 +11,7 @@ import {
 class GoogleSheetsService {
   private sheets: Record<string, any[]> = {};
   private isConnected: boolean = false;
+  private apiKey: string | null = null;
   
   constructor() {
     // Initialize with some default sheets
@@ -20,7 +21,12 @@ class GoogleSheetsService {
       empreendimentos: [],
       unidades: []
     };
-    console.log("Google Sheets Service initialized");
+    
+    // Try to get API key from environment
+    this.apiKey = import.meta.env.VITE_GOOGLE_SHEETS_API_KEY || null;
+    
+    console.log("Google Sheets Service initialized", 
+      this.apiKey ? "API key found" : "No API key found");
   }
   
   // Connect to Google Sheets
@@ -28,6 +34,10 @@ class GoogleSheetsService {
     try {
       // In a real implementation, this would authenticate with Google Sheets API
       console.log("Connecting to Google Sheets...");
+      
+      if (!this.apiKey) {
+        console.warn("No Google Sheets API key found. Using mock implementation.");
+      }
       
       // Simulate connection delay
       await new Promise(resolve => setTimeout(resolve, 500));
