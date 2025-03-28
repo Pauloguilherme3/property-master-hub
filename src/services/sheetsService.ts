@@ -20,8 +20,8 @@ class GoogleSheetsService {
     // Check if we have an API key for Google Sheets
     this.apiKey = import.meta.env.VITE_GOOGLE_SHEETS_API_KEY || null;
     
-    // If no API key, we'll use mock mode (always true for now since we're just replacing)
-    this.mockMode = !this.apiKey || true;
+    // If no API key, we'll use mock mode
+    this.mockMode = !this.apiKey;
 
     if (this.mockMode) {
       console.log("Google Sheets Service initialized in mock mode - using local storage");

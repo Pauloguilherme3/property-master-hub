@@ -30,7 +30,6 @@ import LeadsManagement from "./pages/LeadsManagement";
 import Properties from "./pages/Properties";
 import SheetsTest from "./pages/SheetsTest";
 import DriveTest from "./pages/DriveTest";
-import GoogleSheetsTest from "./pages/GoogleSheetsTest";
 
 const queryClient = new QueryClient();
 
