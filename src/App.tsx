@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -28,7 +29,8 @@ import Clientes from "./pages/Clientes";
 import RelatoriosAnalises from "./pages/RelatoriosAnalises";
 import LeadsManagement from "./pages/LeadsManagement";
 import Properties from "./pages/Properties";
-import MongoDBTestPage from "./pages/MongoDBTest";
+import SheetsTest from "./pages/SheetsTest";
+import DriveTest from "./pages/DriveTest";
 import GoogleSheetsTest from "./pages/GoogleSheetsTest";
 
 const queryClient = new QueryClient();
@@ -117,10 +119,18 @@ function App() {
                 } 
               />
               <Route 
-                path="/mongodb-test" 
+                path="/sheets-test" 
                 element={
                   <AppLayout>
-                    <MongoDBTestPage />
+                    <SheetsTest />
+                  </AppLayout>
+                } 
+              />
+              <Route 
+                path="/drive-test" 
+                element={
+                  <AppLayout>
+                    <DriveTest />
                   </AppLayout>
                 } 
               />
