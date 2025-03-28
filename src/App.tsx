@@ -28,6 +28,7 @@ import RelatoriosAnalises from "./pages/RelatoriosAnalises";
 import LeadsManagement from "./pages/LeadsManagement";
 import Properties from "./pages/Properties";
 import MongoDBTestPage from "./pages/MongoDBTest";
+import GoogleSheetsTest from "./pages/GoogleSheetsTest";
 
 const queryClient = new QueryClient();
 
@@ -77,171 +78,181 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <BrowserRouter>
-        <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <Routes>
-            <Route 
-              path="/login" 
-              element={<LoginPage />} 
-            />
-            <Route 
-              path="/registrar" 
-              element={<RegisterPage />} 
-            />
-            <Route 
-              path="/registro-pendente" 
-              element={<PendingApproval />} 
-            />
-            <Route 
-              path="/" 
-              element={
-                <AppLayout>
-                  <Index />
-                </AppLayout>
-              } 
-            />
-            <Route 
-              path="/dashboard" 
-              element={
-                <AppLayout>
-                  <Dashboard />
-                </AppLayout>
-              } 
-            />
-            <Route 
-              path="/mongodb-test" 
-              element={
-                <AppLayout>
-                  <MongoDBTestPage />
-                </AppLayout>
-              } 
-            />
-            <Route 
-              path="/usuarios" 
-              element={
-                <AppLayout>
-                  <UserManagement />
-                </AppLayout>
-              } 
-            />
-            <Route 
-              path="/empreendimentos" 
-              element={
-                <AppLayout>
-                  <Empreendimentos />
-                </AppLayout>
-              } 
-            />
-            <Route 
-              path="/properties" 
-              element={
-                <AppLayout>
-                  <Properties />
-                </AppLayout>
-              } 
-            />
-            <Route 
-              path="/empreendimentos/:id" 
-              element={
-                <AppLayout>
-                  <EmpreendimentoDetalhe />
-                </AppLayout>
-              } 
-            />
-            <Route 
-              path="/e/:id" 
-              element={<EmpreendimentoPersonalizado />} 
-            />
-            <Route 
-              path="/empreendimentos/mapa" 
-              element={
-                <AppLayout>
-                  <EmpreendimentoMapa />
-                </AppLayout>
-              } 
-            />
-            <Route 
-              path="/unidades" 
-              element={
-                <AppLayout>
-                  <Unidades />
-                </AppLayout>
-              } 
-            />
-            <Route 
-              path="/unidades/:id/reserva" 
-              element={
-                <AppLayout>
-                  <ReservaFormulario />
-                </AppLayout>
-              } 
-            />
-            <Route 
-              path="/reservas" 
-              element={
-                <AppLayout>
-                  <Reservas />
-                </AppLayout>
-              } 
-            />
-            <Route 
-              path="/corretores" 
-              element={
-                <AppLayout>
-                  <Corretores />
-                </AppLayout>
-              } 
-            />
-            <Route 
-              path="/corretores/desempenho" 
-              element={
-                <AppLayout>
-                  <DesempenhoCorretores />
-                </AppLayout>
-              } 
-            />
-            <Route 
-              path="/clientes" 
-              element={
-                <AppLayout>
-                  <Clientes />
-                </AppLayout>
-              } 
-            />
-            <Route 
-              path="/leads" 
-              element={
-                <AppLayout>
-                  <LeadsManagement />
-                </AppLayout>
-              } 
-            />
-            <Route 
-              path="/relatorios" 
-              element={
-                <AppLayout>
-                  <RelatoriosAnalises />
-                </AppLayout>
-              } 
-            />
-            <Route 
-              path="*" 
-              element={
-                <AppLayout>
-                  <NotFound />
-                </AppLayout>
-              } 
-            />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <Toaster />
+            <Sonner />
+            <Routes>
+              <Route 
+                path="/login" 
+                element={<LoginPage />} 
+              />
+              <Route 
+                path="/registrar" 
+                element={<RegisterPage />} 
+              />
+              <Route 
+                path="/registro-pendente" 
+                element={<PendingApproval />} 
+              />
+              <Route 
+                path="/" 
+                element={
+                  <AppLayout>
+                    <Index />
+                  </AppLayout>
+                } 
+              />
+              <Route 
+                path="/dashboard" 
+                element={
+                  <AppLayout>
+                    <Dashboard />
+                  </AppLayout>
+                } 
+              />
+              <Route 
+                path="/mongodb-test" 
+                element={
+                  <AppLayout>
+                    <MongoDBTestPage />
+                  </AppLayout>
+                } 
+              />
+              <Route 
+                path="/usuarios" 
+                element={
+                  <AppLayout>
+                    <UserManagement />
+                  </AppLayout>
+                } 
+              />
+              <Route 
+                path="/empreendimentos" 
+                element={
+                  <AppLayout>
+                    <Empreendimentos />
+                  </AppLayout>
+                } 
+              />
+              <Route 
+                path="/properties" 
+                element={
+                  <AppLayout>
+                    <Properties />
+                  </AppLayout>
+                } 
+              />
+              <Route 
+                path="/empreendimentos/:id" 
+                element={
+                  <AppLayout>
+                    <EmpreendimentoDetalhe />
+                  </AppLayout>
+                } 
+              />
+              <Route 
+                path="/e/:id" 
+                element={<EmpreendimentoPersonalizado />} 
+              />
+              <Route 
+                path="/empreendimentos/mapa" 
+                element={
+                  <AppLayout>
+                    <EmpreendimentoMapa />
+                  </AppLayout>
+                } 
+              />
+              <Route 
+                path="/unidades" 
+                element={
+                  <AppLayout>
+                    <Unidades />
+                  </AppLayout>
+                } 
+              />
+              <Route 
+                path="/unidades/:id/reserva" 
+                element={
+                  <AppLayout>
+                    <ReservaFormulario />
+                  </AppLayout>
+                } 
+              />
+              <Route 
+                path="/reservas" 
+                element={
+                  <AppLayout>
+                    <Reservas />
+                  </AppLayout>
+                } 
+              />
+              <Route 
+                path="/corretores" 
+                element={
+                  <AppLayout>
+                    <Corretores />
+                  </AppLayout>
+                } 
+              />
+              <Route 
+                path="/corretores/desempenho" 
+                element={
+                  <AppLayout>
+                    <DesempenhoCorretores />
+                  </AppLayout>
+                } 
+              />
+              <Route 
+                path="/clientes" 
+                element={
+                  <AppLayout>
+                    <Clientes />
+                  </AppLayout>
+                } 
+              />
+              <Route 
+                path="/leads" 
+                element={
+                  <AppLayout>
+                    <LeadsManagement />
+                  </AppLayout>
+                } 
+              />
+              <Route 
+                path="/relatorios" 
+                element={
+                  <AppLayout>
+                    <RelatoriosAnalises />
+                  </AppLayout>
+                } 
+              />
+              <Route 
+                path="/google-sheets-test" 
+                element={
+                  <ProtectedRoute>
+                    <GoogleSheetsTest />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="*" 
+                element={
+                  <AppLayout>
+                    <NotFound />
+                  </AppLayout>
+                } 
+              />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;

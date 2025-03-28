@@ -1,6 +1,5 @@
 
-import { mongoDBService } from "@/services/mongoService";
-import { ObjectId } from "@/lib/mongodb-exports";
+import { googleSheetsService } from "@/services/googleSheetsService";
 
 export interface Lead {
   id?: string;
@@ -22,16 +21,12 @@ export interface Lead {
 // Create a separate type for lead creation that makes all fields optional for the form
 export type LeadCreate = Partial<Lead>;
 
-// Type for MongoDB document
-type LeadDocument = Omit<Lead, "id"> & { _id?: ObjectId };
-
 export const addLead = async (leadData: LeadCreate) => {
   try {
-    await mongoDBService.connect();
-    const collection = mongoDBService.getCollection<LeadDocument>("leads");
+    await googleSheetsService.connect();
     
     const now = new Date();
-    const leadToInsert: LeadDocument = {
+    const leadToInsert = {
       nome: leadData.nome || "",
       email: leadData.email || "",
       telefone: leadData.telefone || "",
@@ -45,11 +40,8 @@ export const addLead = async (leadData: LeadCreate) => {
       dataAtualizacao: now
     };
     
-    const result = await collection.insertOne(leadToInsert);
-    return { 
-      id: result.insertedId.toString(),
-      ...leadToInsert
-    };
+    const result = await googleSheetsService.addDocument("leads", leadToInsert);
+    return result;
   } catch (error) {
     console.error("Error adding lead:", error);
     throw error;
@@ -58,23 +50,14 @@ export const addLead = async (leadData: LeadCreate) => {
 
 export const updateLead = async (id: string, leadData: Partial<Lead>) => {
   try {
-    await mongoDBService.connect();
-    const collection = mongoDBService.getCollection<LeadDocument>("leads");
+    await googleSheetsService.connect();
     
-    const updateData: Partial<LeadDocument> = {
+    const updateData = {
       ...leadData,
       dataAtualizacao: new Date()
     };
     
-    // Remove id field if present as MongoDB uses _id
-    if ('id' in updateData) {
-      delete updateData.id;
-    }
-    
-    await collection.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: updateData }
-    );
+    await googleSheetsService.updateDocument("leads", id, updateData);
     
     return { id, ...leadData };
   } catch (error) {
@@ -85,10 +68,9 @@ export const updateLead = async (id: string, leadData: Partial<Lead>) => {
 
 export const deleteLead = async (id: string) => {
   try {
-    await mongoDBService.connect();
-    const collection = mongoDBService.getCollection<LeadDocument>("leads");
+    await googleSheetsService.connect();
     
-    await collection.deleteOne({ _id: new ObjectId(id) });
+    await googleSheetsService.deleteDocument("leads", id);
     return true;
   } catch (error) {
     console.error("Error deleting lead:", error);
@@ -98,8 +80,7 @@ export const deleteLead = async (id: string) => {
 
 export const getLeads = async (filters: any = {}) => {
   try {
-    await mongoDBService.connect();
-    const collection = mongoDBService.getCollection<LeadDocument>("leads");
+    await googleSheetsService.connect();
     
     let query: any = {};
     
@@ -115,24 +96,16 @@ export const getLeads = async (filters: any = {}) => {
       query.origem = filters.origem;
     }
     
-    const leads = await collection.find(query).sort({ dataCriacao: -1 }).toArray();
+    const leads = await googleSheetsService.queryDocuments<Lead>("leads", query);
     
-    return leads.map(lead => ({
-      id: lead._id?.toString(),
-      nome: lead.nome,
-      email: lead.email,
-      telefone: lead.telefone,
-      origem: lead.origem,
-      interesse: lead.interesse,
-      observacoes: lead.observacoes,
-      status: lead.status,
-      corretorId: lead.corretorId,
-      empreendimentoInteresse: lead.empreendimentoInteresse,
-      dataCriacao: lead.dataCriacao,
-      dataAtualizacao: lead.dataAtualizacao,
-      ultimoContato: lead.ultimoContato,
-      proximoContato: lead.proximoContato
-    })) as Lead[];
+    // Sort by creation date (newest first)
+    leads.sort((a, b) => {
+      const dateA = a.dataCriacao instanceof Date ? a.dataCriacao : new Date(a.dataCriacao as any);
+      const dateB = b.dataCriacao instanceof Date ? b.dataCriacao : new Date(b.dataCriacao as any);
+      return dateB.getTime() - dateA.getTime();
+    });
+    
+    return leads;
   } catch (error) {
     console.error("Error getting leads:", error);
     throw error;
@@ -141,19 +114,13 @@ export const getLeads = async (filters: any = {}) => {
 
 export const registrarContatoLead = async (id: string, observacoes: string) => {
   try {
-    await mongoDBService.connect();
-    const collection = mongoDBService.getCollection<LeadDocument>("leads");
+    await googleSheetsService.connect();
     
-    await collection.updateOne(
-      { _id: new ObjectId(id) },
-      { 
-        $set: { 
-          ultimoContato: new Date(),
-          observacoes: observacoes,
-          dataAtualizacao: new Date()
-        } 
-      }
-    );
+    await googleSheetsService.updateDocument("leads", id, { 
+      ultimoContato: new Date(),
+      observacoes: observacoes,
+      dataAtualizacao: new Date()
+    });
     
     return true;
   } catch (error) {
@@ -164,19 +131,13 @@ export const registrarContatoLead = async (id: string, observacoes: string) => {
 
 export const atribuirCorretorLead = async (id: string, corretorId: string) => {
   try {
-    await mongoDBService.connect();
-    const collection = mongoDBService.getCollection<LeadDocument>("leads");
+    await googleSheetsService.connect();
     
-    await collection.updateOne(
-      { _id: new ObjectId(id) },
-      { 
-        $set: { 
-          corretorId: corretorId,
-          dataAtualizacao: new Date(),
-          status: "contatado"
-        } 
-      }
-    );
+    await googleSheetsService.updateDocument("leads", id, { 
+      corretorId: corretorId,
+      dataAtualizacao: new Date(),
+      status: "contatado"
+    });
     
     return true;
   } catch (error) {

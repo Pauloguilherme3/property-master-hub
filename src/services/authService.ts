@@ -1,3 +1,4 @@
+
 import { 
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -7,7 +8,7 @@ import {
   updateProfile
 } from "@/lib/firebase-exports";
 import { auth } from "@/config/firebase";
-import { setDocument, getDocument, updateDocument } from "./dbService";
+import { googleSheetsService } from "./googleSheetsService";
 import { User, UserRole, UserStatus } from "@/types";
 
 // Check if Firebase is initialized before operations
@@ -57,6 +58,11 @@ export const signUp = async (email: string, password: string, name: string) => {
   }
   
   try {
+    // Initialize Google Sheets connection if not already connected
+    if (!googleSheetsService.isConnectedToSheets()) {
+      await googleSheetsService.connect();
+    }
+    
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     if (name) {
       await updateProfile(userCredential.user, { displayName: name });
@@ -67,8 +73,8 @@ export const signUp = async (email: string, password: string, name: string) => {
     const userRole = isAdmin ? UserRole.ADMINISTRADOR : UserRole.CORRETOR;
     const userStatus = isAdmin ? UserStatus.ATIVO : UserStatus.PENDENTE;
 
-    // Create user document in Firestore
-    await setDocument("users", userCredential.user.uid, {
+    // Create user document in Google Sheets
+    await googleSheetsService.addDocument("users", {
       nome: name,
       name: name,
       email: email,
@@ -91,23 +97,28 @@ export const signIn = async (email: string, password: string) => {
   }
   
   try {
+    // Initialize Google Sheets connection if not already connected
+    if (!googleSheetsService.isConnectedToSheets()) {
+      await googleSheetsService.connect();
+    }
+    
     // Check if the user is the admin email
     const isAdmin = isAdminEmail(email);
     
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     
-    // If admin email, ensure they have admin status in Firestore
-    if (isAdmin) {
-      const userData = await getDocument("users", userCredential.user.uid);
-      if (userData) {
-        // Ensure admin has proper role and active status
-        if (userData.role !== UserRole.ADMINISTRADOR || userData.status !== UserStatus.ATIVO) {
-          await updateDocument("users", userCredential.user.uid, {
-            role: UserRole.ADMINISTRADOR,
-            status: UserStatus.ATIVO
-          });
-          console.log("Admin privileges enforced for admin email");
-        }
+    // Get user data from Google Sheets
+    const userData = await googleSheetsService.findUserByEmail(email);
+    
+    // If admin email, ensure they have admin status in Google Sheets
+    if (isAdmin && userData) {
+      // Ensure admin has proper role and active status
+      if (userData.role !== UserRole.ADMINISTRADOR || userData.status !== UserStatus.ATIVO) {
+        await googleSheetsService.updateDocument("users", userData.id, {
+          role: UserRole.ADMINISTRADOR,
+          status: UserStatus.ATIVO
+        });
+        console.log("Admin privileges enforced for admin email");
       }
     }
     
