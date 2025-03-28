@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -7,6 +8,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { Navbar } from "./components/layout/Navbar";
 import { Sidebar } from "./components/layout/Sidebar";
+import ProtectedRoute from "./components/ui/ProtectedRoute";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/Login";
@@ -235,7 +237,9 @@ function App() {
                 path="/google-sheets-test" 
                 element={
                   <ProtectedRoute>
-                    <GoogleSheetsTest />
+                    <AppLayout>
+                      <GoogleSheetsTest />
+                    </AppLayout>
                   </ProtectedRoute>
                 } 
               />

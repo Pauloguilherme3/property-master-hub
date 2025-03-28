@@ -11,7 +11,16 @@ import { getDocument, setDocument, updateDocument } from "@/services/dbService";
 import { FirebaseUser } from "@/lib/firebase-exports";
 import { auth } from "@/config/firebase";
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType>({
+  user: null,
+  isAuthenticated: false,
+  isLoading: true,
+  isFirebaseInitialized: false,
+  login: async () => { throw new Error("AuthContext not initialized"); },
+  logout: async () => { throw new Error("AuthContext not initialized"); },
+  register: async () => { throw new Error("AuthContext not initialized"); },
+  hasPermission: () => false,
+});
 
 const ADMIN_EMAIL = "paulo100psy@gmail.com";
 

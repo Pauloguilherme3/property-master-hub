@@ -1,7 +1,6 @@
 
-import { useContext } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
-import { AuthContext } from '@/contexts/AuthContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -9,10 +8,10 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-  const { user, loading, userData } = useContext(AuthContext);
+  const { user, isLoading } = useAuth();
 
   // Show loading state
-  if (loading) {
+  if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
   }
 
@@ -22,9 +21,9 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   }
 
   // Check role restrictions if provided
-  if (allowedRoles && userData && !allowedRoles.includes(userData.role)) {
+  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
     // Redirect to pending approval page for users without proper permissions
-    return <Navigate to="/pending-approval" replace />;
+    return <Navigate to="/registro-pendente" replace />;
   }
 
   return <>{children}</>;
