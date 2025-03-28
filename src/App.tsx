@@ -245,7 +245,7 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <AppLayout>
-                      <GoogleSheetsTest />
+                      <SheetsTest />
                     </AppLayout>
                   </ProtectedRoute>
                 } 

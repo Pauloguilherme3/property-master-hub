@@ -1,26 +1,22 @@
 
+// Auth service now uses Google Sheets as the backend through googleSheetsService
 import { 
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  firebaseSignOut,
-  onAuthStateChanged,
-  FirebaseUser,
-  updateProfile
+  FirebaseUser 
 } from "@/lib/firebase-exports";
 import { auth } from "@/config/firebase";
 import { googleSheetsService } from "./googleSheetsService";
 import { User, UserRole, UserStatus } from "@/types";
 
-// Check if Firebase is initialized before operations
-const checkFirebaseInit = () => {
-  if (!auth) {
-    console.error("Firebase authentication is not initialized");
+// Check if Google Sheets is initialized before operations
+const checkGoogleSheetsInit = () => {
+  if (!googleSheetsService.isConnectedToSheets()) {
+    console.error("Google Sheets service is not connected");
     return false;
   }
   return true;
 };
 
-// Helper to handle Firebase Auth errors
+// Helper to handle Auth errors
 const handleAuthError = (error: any): string => {
   console.error("Auth error details:", error);
   
@@ -53,21 +49,14 @@ const isAdminEmail = (email: string): boolean => {
 
 // Sign up with email and password
 export const signUp = async (email: string, password: string, name: string) => {
-  if (!checkFirebaseInit()) {
-    throw new Error("Firebase authentication is not initialized");
+  if (!checkGoogleSheetsInit()) {
+    throw new Error("Google Sheets service is not connected");
   }
   
   try {
-    // Initialize Google Sheets connection if not already connected
-    if (!googleSheetsService.isConnectedToSheets()) {
-      await googleSheetsService.connect();
-    }
+    // Generate a unique ID
+    const userId = Date.now().toString();
     
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    if (name) {
-      await updateProfile(userCredential.user, { displayName: name });
-    }
-
     // Set default role for new users
     const isAdmin = isAdminEmail(email);
     const userRole = isAdmin ? UserRole.ADMINISTRADOR : UserRole.CORRETOR;
@@ -75,6 +64,7 @@ export const signUp = async (email: string, password: string, name: string) => {
 
     // Create user document in Google Sheets
     await googleSheetsService.addDocument("users", {
+      id: userId,
       nome: name,
       name: name,
       email: email,
@@ -83,7 +73,13 @@ export const signUp = async (email: string, password: string, name: string) => {
       dataCadastro: new Date().toISOString(),
     });
 
-    return userCredential.user;
+    // Return mock user
+    return { 
+      uid: userId,
+      email: email,
+      displayName: name,
+      photoURL: null
+    };
   } catch (error: any) {
     console.error("SignUp error:", error);
     throw new Error(handleAuthError(error));
@@ -92,23 +88,20 @@ export const signUp = async (email: string, password: string, name: string) => {
 
 // Sign in with email and password
 export const signIn = async (email: string, password: string) => {
-  if (!checkFirebaseInit()) {
-    throw new Error("Firebase authentication is not initialized");
+  if (!checkGoogleSheetsInit()) {
+    throw new Error("Google Sheets service is not connected");
   }
   
   try {
-    // Initialize Google Sheets connection if not already connected
-    if (!googleSheetsService.isConnectedToSheets()) {
-      await googleSheetsService.connect();
-    }
-    
     // Check if the user is the admin email
     const isAdmin = isAdminEmail(email);
     
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    
     // Get user data from Google Sheets
     const userData = await googleSheetsService.findUserByEmail(email);
+    
+    if (!userData) {
+      throw new Error("User not found");
+    }
     
     // If admin email, ensure they have admin status in Google Sheets
     if (isAdmin && userData) {
@@ -122,7 +115,12 @@ export const signIn = async (email: string, password: string) => {
       }
     }
     
-    return userCredential.user;
+    return { 
+      uid: userData.id,
+      email: userData.email,
+      displayName: userData.name || userData.nome,
+      photoURL: userData.avatar || null
+    };
   } catch (error: any) {
     console.error("SignIn error:", error);
     throw new Error(handleAuthError(error));
@@ -131,40 +129,26 @@ export const signIn = async (email: string, password: string) => {
 
 // Sign out
 export const signOut = async () => {
-  if (!checkFirebaseInit()) {
-    throw new Error("Firebase authentication is not initialized");
-  }
-  
-  try {
-    return firebaseSignOut(auth);
-  } catch (error: any) {
-    console.error("SignOut error:", error);
-    throw new Error(error.message || "Erro ao fazer logout");
-  }
+  return Promise.resolve();
 };
 
 // Listen to auth state changes
 export const onAuthChange = (callback: (user: FirebaseUser | null) => void) => {
-  if (!checkFirebaseInit()) {
-    // If auth is not initialized, immediately call the callback with null
+  // If we're not connected to sheets, immediately call with null
+  if (!checkGoogleSheetsInit()) {
     setTimeout(() => callback(null), 0);
-    // Return a no-op unsubscribe function
     return () => {};
   }
   
-  try {
-    return onAuthStateChanged(auth, callback);
-  } catch (error) {
-    console.error("Error setting up auth state listener:", error);
-    setTimeout(() => callback(null), 0);
-    return () => {};
-  }
+  // Set up a mock auth state listener
+  // This will trigger the callback with null immediately
+  setTimeout(() => callback(null), 0);
+  
+  // Return a no-op unsubscribe function
+  return () => {};
 };
 
 // Get current user
 export const getCurrentUser = () => {
-  if (!checkFirebaseInit()) {
-    return null;
-  }
-  return auth.currentUser;
+  return null;
 };

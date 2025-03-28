@@ -1,184 +1,83 @@
 
-import { 
-  User, 
-  UserRole, 
-  UserStatus 
-} from "@/types";
+import { sheetsService } from "./sheetsService";
+import { User } from "@/types";
 
-// Mock implementation for Google Sheets API
-// In a real implementation, you would use Google Sheets API client library
-
+// Google Sheets Service for application-specific operations
 class GoogleSheetsService {
-  private sheets: Record<string, any[]> = {};
-  private isConnected: boolean = false;
-  private apiKey: string | null = null;
-  
-  constructor() {
-    // Initialize with some default sheets
-    this.sheets = {
-      users: [],
-      leads: [],
-      empreendimentos: [],
-      unidades: []
-    };
-    
-    // Try to get API key from environment
-    this.apiKey = import.meta.env.VITE_GOOGLE_SHEETS_API_KEY || null;
-    
-    console.log("Google Sheets Service initialized", 
-      this.apiKey ? "API key found" : "No API key found");
+  private isInitialized = false;
+
+  // Check if connected to Google Sheets
+  isConnectedToSheets(): boolean {
+    return sheetsService.isConnectedToSheets();
   }
-  
+
   // Connect to Google Sheets
   async connect(): Promise<void> {
     try {
-      // In a real implementation, this would authenticate with Google Sheets API
-      console.log("Connecting to Google Sheets...");
-      
-      if (!this.apiKey) {
-        console.warn("No Google Sheets API key found. Using mock implementation.");
-      }
-      
-      // Simulate connection delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      this.isConnected = true;
-      console.log("Connected to Google Sheets");
+      await sheetsService.connect();
+      this.isInitialized = true;
+      console.log("Connected to Google Sheets service");
     } catch (error) {
-      console.error("Error connecting to Google Sheets:", error);
+      console.error("Failed to connect to Google Sheets:", error);
       throw error;
     }
   }
-  
-  // Check if connected
-  isConnectedToSheets(): boolean {
-    return this.isConnected;
-  }
-  
-  // Close connection
+
+  // Close the connection
   async close(): Promise<void> {
-    this.isConnected = false;
-    console.log("Disconnected from Google Sheets");
+    try {
+      await sheetsService.close();
+      this.isInitialized = false;
+    } catch (error) {
+      console.error("Error closing Google Sheets connection:", error);
+      throw error;
+    }
   }
-  
-  // Get sheet data
-  async getSheet<T>(sheetName: string): Promise<T[]> {
-    if (!this.isConnected) {
-      throw new Error("Not connected to Google Sheets");
+
+  // Add a document to a collection
+  async addDocument(collectionName: string, data: any): Promise<{ id: string }> {
+    if (!this.isConnectedToSheets()) {
+      await this.connect();
     }
     
-    // Ensure sheet exists
-    if (!this.sheets[sheetName]) {
-      this.sheets[sheetName] = [];
-    }
+    const collection = sheetsService.getCollection(collectionName);
+    const result = await collection.insertOne(data);
     
-    return this.sheets[sheetName] as T[];
+    return { id: result.insertedId.toString() };
   }
-  
-  // Add document to sheet
-  async addDocument<T>(sheetName: string, data: T): Promise<T & { id: string }> {
-    if (!this.isConnected) {
-      throw new Error("Not connected to Google Sheets");
+
+  // Update a document in a collection
+  async updateDocument(collectionName: string, id: string, data: any): Promise<boolean> {
+    if (!this.isConnectedToSheets()) {
+      await this.connect();
     }
     
-    // Ensure sheet exists
-    if (!this.sheets[sheetName]) {
-      this.sheets[sheetName] = [];
-    }
+    const collection = sheetsService.getCollection(collectionName);
+    const result = await collection.updateOne({ _id: id }, { $set: data });
     
-    const id = crypto.randomUUID();
-    const document = { ...data, id };
-    
-    this.sheets[sheetName].push(document);
-    
-    return document as T & { id: string };
+    return result.modifiedCount > 0;
   }
-  
-  // Get document by ID
-  async getDocument<T>(sheetName: string, id: string): Promise<(T & { id: string }) | null> {
-    if (!this.isConnected) {
-      throw new Error("Not connected to Google Sheets");
+
+  // Find a user by email
+  async findUserByEmail(email: string): Promise<User | null> {
+    if (!this.isConnectedToSheets()) {
+      await this.connect();
     }
     
-    // Ensure sheet exists
-    if (!this.sheets[sheetName]) {
-      return null;
-    }
-    
-    const document = this.sheets[sheetName].find(doc => doc.id === id);
-    
-    return document ? (document as T & { id: string }) : null;
+    const collection = sheetsService.getCollection<User>('users');
+    return collection.findOne({ email: email });
   }
-  
-  // Update document
-  async updateDocument<T>(sheetName: string, id: string, data: Partial<T>): Promise<boolean> {
-    if (!this.isConnected) {
-      throw new Error("Not connected to Google Sheets");
+
+  // Get all documents from a collection
+  async getAllDocuments<T>(collectionName: string): Promise<T[]> {
+    if (!this.isConnectedToSheets()) {
+      await this.connect();
     }
     
-    // Ensure sheet exists
-    if (!this.sheets[sheetName]) {
-      return false;
-    }
-    
-    const index = this.sheets[sheetName].findIndex(doc => doc.id === id);
-    
-    if (index === -1) {
-      return false;
-    }
-    
-    this.sheets[sheetName][index] = {
-      ...this.sheets[sheetName][index],
-      ...data
-    };
-    
-    return true;
-  }
-  
-  // Delete document
-  async deleteDocument(sheetName: string, id: string): Promise<boolean> {
-    if (!this.isConnected) {
-      throw new Error("Not connected to Google Sheets");
-    }
-    
-    // Ensure sheet exists
-    if (!this.sheets[sheetName]) {
-      return false;
-    }
-    
-    const initialLength = this.sheets[sheetName].length;
-    this.sheets[sheetName] = this.sheets[sheetName].filter(doc => doc.id !== id);
-    
-    return this.sheets[sheetName].length < initialLength;
-  }
-  
-  // Query documents
-  async queryDocuments<T>(sheetName: string, filter: Record<string, any>): Promise<(T & { id: string })[]> {
-    if (!this.isConnected) {
-      throw new Error("Not connected to Google Sheets");
-    }
-    
-    // Ensure sheet exists
-    if (!this.sheets[sheetName]) {
-      return [];
-    }
-    
-    // Simple filtering
-    const results = this.sheets[sheetName].filter(doc => {
-      return Object.entries(filter).every(([key, value]) => {
-        return doc[key] === value;
-      });
-    });
-    
-    return results as (T & { id: string })[];
-  }
-  
-  // Find user by email
-  async findUserByEmail(email: string): Promise<(User & { id: string }) | null> {
-    const users = await this.queryDocuments<User>("users", { email });
-    return users.length > 0 ? users[0] : null;
+    const collection = sheetsService.getCollection<T>(collectionName);
+    return collection.find().toArray();
   }
 }
 
-// Export singleton instance
+// Singleton instance
 export const googleSheetsService = new GoogleSheetsService();

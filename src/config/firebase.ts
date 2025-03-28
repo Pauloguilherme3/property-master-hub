@@ -1,14 +1,8 @@
 
-// Firebase configuration
-import { 
-  initializeApp, 
-  getAuth, 
-  getFirestore, 
-  getAnalytics, 
-  isSupported 
-} from '@/lib/firebase-exports';
+// Firebase configuration - now using mock implementations
 
-// Firebase configuration using GitHub Actions secrets
+// Note: This file now provides mock Firebase functionality
+// It uses the firebase-exports.ts mock implementations
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "demo-key",
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "demo-project.firebaseapp.com",
@@ -19,49 +13,44 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-ABC123DEF"
 };
 
-// Initialize Firebase
-let app;
-let analytics;
-let auth;
-let db;
+// Get mock implementations
+import { 
+  getAuth, 
+  getAnalytics, 
+  isSupported 
+} from '@/lib/firebase-exports';
+
+// Initialize mock auth and analytics
+let app = {};
+let analytics = {};
+let auth = getAuth();
+let db = {};
 
 try {
-  // Check if Firebase is already initialized
-  if (!app) {
-    console.log("Initializing Firebase with config:", { 
-      ...firebaseConfig, 
-      apiKey: firebaseConfig.apiKey ? "REDACTED" : "NOT_SET"
-    });
-    
-    app = initializeApp(firebaseConfig);
-    
-    // Only initialize analytics if supported and in browser environment
-    if (typeof window !== 'undefined') {
-      // Use async function for analytics to handle support check
-      const initAnalytics = async () => {
-        try {
-          if (await isSupported()) {
-            analytics = getAnalytics(app);
-            console.log("Firebase Analytics initialized");
-          } else {
-            console.log("Firebase Analytics not supported in this environment");
-          }
-        } catch (error) {
-          console.error("Error initializing Analytics:", error);
+  console.log("Using mock Firebase implementation with Google Sheets/Drive backend");
+  
+  // Only initialize analytics in browser environment
+  if (typeof window !== 'undefined') {
+    // Mock analytics initialization
+    const initAnalytics = async () => {
+      try {
+        if (await isSupported()) {
+          analytics = getAnalytics();
+          console.log("Mock Analytics initialized");
+        } else {
+          console.log("Analytics not supported in this environment");
         }
-      };
-      
-      initAnalytics();
-    }
+      } catch (error) {
+        console.error("Error initializing Analytics:", error);
+      }
+    };
     
-    auth = getAuth(app);
-    db = getFirestore(app);
-    
-    console.log("Firebase initialized successfully");
+    initAnalytics();
   }
+  
+  console.log("Mock Firebase initialized successfully");
 } catch (error) {
-  console.error("Error initializing Firebase:", error);
-  console.error("Firebase initialization failed. Some features may not work properly.");
+  console.error("Error initializing mock Firebase:", error);
 }
 
 export { app, analytics, auth, db };
