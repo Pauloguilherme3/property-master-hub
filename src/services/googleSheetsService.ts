@@ -58,6 +58,29 @@ class GoogleSheetsService {
     return result.modifiedCount > 0;
   }
 
+  // Delete a document from a collection
+  async deleteDocument(collectionName: string, id: string): Promise<boolean> {
+    if (!this.isConnectedToSheets()) {
+      await this.connect();
+    }
+    
+    const collection = sheetsService.getCollection(collectionName);
+    const result = await collection.deleteOne({ _id: id });
+    
+    return result.deletedCount > 0;
+  }
+
+  // Query documents with conditions
+  async queryDocuments<T>(collectionName: string, conditions: Record<string, any>): Promise<T[]> {
+    if (!this.isConnectedToSheets()) {
+      await this.connect();
+    }
+    
+    const collection = sheetsService.getCollection<T>(collectionName);
+    let filteredResults = await collection.find(conditions).toArray();
+    return filteredResults;
+  }
+
   // Find a user by email
   async findUserByEmail(email: string): Promise<User | null> {
     if (!this.isConnectedToSheets()) {
