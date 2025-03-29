@@ -22,3 +22,20 @@ export {
   getAnalytics, 
   isSupported 
 } from "firebase/analytics";
+
+// Firestore exports
+export {
+  getFirestore,
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  query,
+  where
+} from "firebase/firestore";
+
+// Firebase app exports
+export { initializeApp } from "firebase/app";

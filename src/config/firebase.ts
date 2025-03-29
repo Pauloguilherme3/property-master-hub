@@ -1,8 +1,6 @@
 
 // Firebase configuration for authentication and hosting
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getAnalytics, isSupported } from "firebase/analytics";
+import { initializeApp, getAuth, getAnalytics, isSupported, getFirestore } from "@/lib/firebase-exports";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "demo-key",
@@ -17,6 +15,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const firestore = getFirestore(app);
 let analytics = null;
 
 // Initialize Analytics in browser environment
@@ -39,4 +38,4 @@ if (typeof window !== 'undefined') {
 
 console.log("Firebase initialized successfully for authentication");
 
-export { app, analytics, auth };
+export { app, analytics, auth, firestore };
