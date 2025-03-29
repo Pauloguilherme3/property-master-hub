@@ -30,6 +30,7 @@ import LeadsManagement from "./pages/LeadsManagement";
 import Properties from "./pages/Properties";
 import SheetsTest from "./pages/SheetsTest";
 import DriveTest from "./pages/DriveTest";
+import CreatePropertyModal from "./components/modals/CreatePropertyModal";
 
 const queryClient = new QueryClient();
 
@@ -248,6 +249,14 @@ function App() {
                       <SheetsTest />
                     </AppLayout>
                   </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/properties/new" 
+                element={
+                  <AppLayout>
+                    <CreatePropertyModal isOpen={true} onClose={() => {}} />
+                  </AppLayout>
                 } 
               />
               <Route 

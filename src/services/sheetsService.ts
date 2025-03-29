@@ -1,4 +1,3 @@
-
 // Real Google Sheets Service using Google Sheets API
 import { 
   Collection, 
@@ -96,23 +95,18 @@ class GoogleSheetsService {
         return;
       }
       
-      // Load the Google API client library
-      if (typeof window !== 'undefined' && !window.gapi) {
-        // This would be handled by adding the script to index.html
-        // or dynamically loading it here
-        const script = document.createElement('script');
-        script.src = 'https://apis.google.com/js/api.js';
-        script.async = true;
-        script.defer = true;
-        script.onload = () => {
-          console.log("Google API client script loaded");
-          this.loadGapiClient();
-        };
-        document.head.appendChild(script);
-      } else if (window.gapi) {
+      // Fallback to mock mode if we're not in a browser environment or gapi is not available
+      if (typeof window === 'undefined' || typeof window.gapi === 'undefined') {
+        console.log("Google API client not available, using mock mode");
+        this.mockMode = true;
+        return;
+      }
+
+      // If gapi is available, try to initialize it
+      if (window.gapi) {
         this.loadGapiClient();
       } else {
-        console.log("Google API client not loaded, using mock mode for now");
+        console.log("Google API client not loaded, using mock mode");
         this.mockMode = true;
       }
     } catch (error) {
@@ -415,7 +409,7 @@ class GoogleSheetsService {
               }
               
               const headers = values[0];
-              const documents = values.slice(1).map(row => {
+              let documents = values.slice(1).map(row => {
                 const doc: any = {};
                 headers.forEach((header, index) => {
                   doc[header] = row[index] || '';
