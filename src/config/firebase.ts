@@ -1,6 +1,12 @@
 
 // Firebase configuration for authentication and hosting
-import { initializeApp, getAuth, getAnalytics, isSupported, getFirestore } from "@/lib/firebase-exports";
+import { 
+  initializeApp, 
+  getAuth, 
+  getAnalytics, 
+  isSupported, 
+  getFirestore 
+} from "@/lib/firebase-exports";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "demo-key",

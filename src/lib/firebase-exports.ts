@@ -1,15 +1,9 @@
 
-// Real Firebase exports for authentication
-export { 
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut as firebaseSignOut,
-  onAuthStateChanged,
-  updateProfile
-} from "firebase/auth";
+// Mock Firebase exports for authentication
+// These are used for compatibility with the rest of the code
+// while we use the mock implementations
 
-// Define FirebaseUser type for compatibility with existing code
+// Auth types
 export interface FirebaseUser {
   uid: string;
   email: string | null;
@@ -17,25 +11,29 @@ export interface FirebaseUser {
   photoURL: string | null;
 }
 
-// Analytics exports
-export { 
-  getAnalytics, 
-  isSupported 
-} from "firebase/analytics";
+// Mock Auth functions
+export const getAuth = () => ({});
+export const createUserWithEmailAndPassword = async () => ({ user: {} });
+export const signInWithEmailAndPassword = async () => ({ user: {} });
+export const firebaseSignOut = async () => {};
+export const onAuthStateChanged = () => () => {};
+export const updateProfile = async () => {};
 
-// Firestore exports
-export {
-  getFirestore,
-  collection,
-  doc,
-  setDoc,
-  getDoc,
-  getDocs,
-  updateDoc,
-  deleteDoc,
-  query,
-  where
-} from "firebase/firestore";
+// Mock Analytics functions
+export const getAnalytics = () => ({});
+export const isSupported = async () => true;
 
-// Firebase app exports
-export { initializeApp } from "firebase/app";
+// Mock Firestore functions
+export const getFirestore = () => ({});
+export const collection = () => ({});
+export const doc = () => ({});
+export const setDoc = async () => {};
+export const getDoc = async () => ({ exists: () => false, data: () => ({}) });
+export const getDocs = async () => ({ docs: [] });
+export const updateDoc = async () => {};
+export const deleteDoc = async () => {};
+export const query = () => ({});
+export const where = () => ({});
+
+// Mock Firebase app
+export const initializeApp = () => ({});
