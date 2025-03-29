@@ -21,20 +21,35 @@ import { Empreendimento, UserRole, FiltroEmpreendimento, MANAGER, ADMINISTRATOR,
 import { mockEmpreendimentos } from "@/utils/animations";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
+import { dataService } from "@/services/dataService";
+import { CreatePropertyModal } from "@/components/modals/CreatePropertyModal";
 
 const PropertiesPage = () => {
   const { hasPermission } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<FiltroEmpreendimento>({});
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Fetching properties data
-  const { data: properties = [], isLoading } = useQuery({
+  const { data: properties = [], isLoading, refetch } = useQuery({
     queryKey: ["properties"],
     queryFn: async () => {
-      // This would be an API call in a real application
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return mockEmpreendimentos;
+      try {
+        // Try to get properties from the data service
+        await dataService.initialize();
+        const empreendimentos = await dataService.getAllDocuments<Empreendimento>("empreendimentos");
+        
+        if (empreendimentos.length === 0) {
+          return mockEmpreendimentos;
+        }
+        
+        return empreendimentos;
+      } catch (error) {
+        console.error("Error fetching properties:", error);
+        // Fallback to mock data
+        return mockEmpreendimentos;
+      }
     }
   });
 
@@ -65,10 +80,12 @@ const PropertiesPage = () => {
   });
 
   const handleAddProperty = () => {
-    toast({
-      title: "Feature Coming Soon",
-      description: "Add property functionality will be available soon.",
-    });
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsCreateModalOpen(false);
+    refetch(); // Refresh the property list after adding a new one
   };
 
   return (
@@ -162,7 +179,7 @@ const PropertiesPage = () => {
                     <Card className="overflow-hidden transition-all group-hover:shadow-lg">
                       <div className="relative h-48 overflow-hidden">
                         <img
-                          src={property.imagens[0]}
+                          src={property.imagens?.[0] || "/placeholder.svg"}
                           alt={property.nome}
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />
@@ -187,6 +204,11 @@ const PropertiesPage = () => {
           </CardContent>
         </Card>
       </div>
+      
+      <CreatePropertyModal 
+        isOpen={isCreateModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 };

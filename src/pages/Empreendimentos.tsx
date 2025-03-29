@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { 
@@ -39,6 +40,8 @@ import { Empreendimento, FiltroEmpreendimento, UserRole } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { mockEmpreendimentos } from "@/utils/animations";
+import { dataService } from "@/services/dataService";
+import { CreatePropertyModal } from "@/components/modals/CreatePropertyModal";
 
 export default function Empreendimentos() {
   const { hasPermission } = useAuth();
@@ -47,14 +50,27 @@ export default function Empreendimentos() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [filtros, setFiltros] = useState<FiltroEmpreendimento>({});
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Obter dados dos empreendimentos
-  const { data: empreendimentos = [] } = useQuery({
+  const { data: empreendimentos = [], isLoading, refetch } = useQuery({
     queryKey: ["empreendimentos"],
     queryFn: async () => {
-      // Este seria uma chamada de API em uma aplicação real
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return mockEmpreendimentos;
+      try {
+        // Tenta buscar empreendimentos do serviço de dados
+        await dataService.initialize();
+        const properties = await dataService.getAllDocuments<Empreendimento>("empreendimentos");
+        
+        if (properties.length === 0) {
+          return mockEmpreendimentos;
+        }
+        
+        return properties;
+      } catch (error) {
+        console.error("Erro ao buscar empreendimentos:", error);
+        // Fallback para dados simulados
+        return mockEmpreendimentos;
+      }
     }
   });
 
@@ -100,10 +116,12 @@ export default function Empreendimentos() {
   };
 
   const handleAddProperty = () => {
-    toast({
-      title: "Feature Coming Soon",
-      description: "Add property functionality will be available soon.",
-    });
+    setIsCreateModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsCreateModalOpen(false);
+    refetch(); // Atualiza a lista de empreendimentos após adicionar um novo
   };
 
   const canManageProperties = hasPermission([
@@ -338,6 +356,11 @@ export default function Empreendimentos() {
           </TabsContent>
         </Tabs>
       </div>
+      
+      <CreatePropertyModal 
+        isOpen={isCreateModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 }
