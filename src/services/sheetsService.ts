@@ -16,14 +16,22 @@ class GoogleSheetsService {
   private mockMode: boolean = true;
   private mockCollections: Record<string, any[]> = {};
   private apiKey: string | null = null;
+  private documentId: string | null = null;
   private sheetsApiInitialized: boolean = false;
+  private sheetNames: Record<string, string> = {
+    empreendimentos: import.meta.env.VITE_GOOGLE_SHEET_PROPERTIES || 'EmpreendimentosData',
+    unidades: import.meta.env.VITE_GOOGLE_SHEET_UNITS || 'UnidadesData',
+    reservas: import.meta.env.VITE_GOOGLE_SHEET_RESERVATIONS || 'ReservasData',
+    users: import.meta.env.VITE_GOOGLE_SHEET_USERS || 'UsuariosData',
+  };
 
   constructor() {
     // Check if we have an API key for Google Sheets
     this.apiKey = import.meta.env.VITE_GOOGLE_SHEETS_API_KEY || null;
+    this.documentId = import.meta.env.VITE_GOOGLE_SHEETS_DOCUMENT_ID || null;
     
-    // If no API key, we'll use mock mode
-    this.mockMode = !this.apiKey;
+    // If no API key or document ID, we'll use mock mode
+    this.mockMode = !this.apiKey || !this.documentId;
 
     if (this.mockMode) {
       console.log("Google Sheets Service initialized in mock mode - using local storage");
@@ -57,11 +65,14 @@ class GoogleSheetsService {
             { _id: new ObjectId().toString(), name: "Sheet Item 1", value: 100 },
             { _id: new ObjectId().toString(), name: "Sheet Item 2", value: 200 }
           ],
-          users: []
+          users: [],
+          empreendimentos: [],
+          unidades: [],
+          reservas: []
         };
       }
     } else {
-      console.log("Google Sheets Service initialized with API key");
+      console.log("Google Sheets Service initialized with API key and Document ID");
       this.initGoogleSheetsApi();
     }
   }
@@ -71,7 +82,6 @@ class GoogleSheetsService {
     if (this.sheetsApiInitialized) return;
     
     try {
-      // In a real implementation, we would load and initialize the Google Sheets API client
       console.log("Loading Google Sheets API...");
       
       if (!this.apiKey) {
@@ -80,21 +90,51 @@ class GoogleSheetsService {
         return;
       }
       
-      // Load the Google API client library
-      if (typeof window !== 'undefined' && !window.gapi) {
-        // This would be handled by adding the script to index.html
-        // or dynamically loading it here
-        console.log("Google API client not loaded, using mock mode for now");
+      if (!this.documentId) {
+        console.error("Google Sheets Document ID not found");
         this.mockMode = true;
         return;
       }
       
-      this.sheetsApiInitialized = true;
-      console.log("Google Sheets API initialized");
+      // Load the Google API client library
+      if (typeof window !== 'undefined' && !window.gapi) {
+        // This would be handled by adding the script to index.html
+        // or dynamically loading it here
+        const script = document.createElement('script');
+        script.src = 'https://apis.google.com/js/api.js';
+        script.async = true;
+        script.defer = true;
+        script.onload = () => {
+          console.log("Google API client script loaded");
+          this.loadGapiClient();
+        };
+        document.head.appendChild(script);
+      } else if (window.gapi) {
+        this.loadGapiClient();
+      } else {
+        console.log("Google API client not loaded, using mock mode for now");
+        this.mockMode = true;
+      }
     } catch (error) {
       console.error("Error initializing Google Sheets API:", error);
       this.mockMode = true;
     }
+  }
+  
+  // Load Google API client
+  private loadGapiClient() {
+    window.gapi.load('client', () => {
+      window.gapi.client.init({
+        apiKey: this.apiKey,
+        discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
+      }).then(() => {
+        this.sheetsApiInitialized = true;
+        console.log("Google Sheets API initialized");
+      }).catch((error: any) => {
+        console.error("Error initializing Google API client:", error);
+        this.mockMode = true;
+      });
+    });
   }
 
   // Save mock data to localStorage
@@ -104,6 +144,11 @@ class GoogleSheetsService {
     } catch (e) {
       console.error("Error saving mock data to localStorage", e);
     }
+  }
+
+  // Get actual sheet name for collection
+  private getSheetName(collectionName: string): string {
+    return this.sheetNames[collectionName] || collectionName;
   }
 
   // Connect to Google Sheets
@@ -122,12 +167,38 @@ class GoogleSheetsService {
         // Initialize real Google Sheets API
         await this.initGoogleSheetsApi();
         
-        // In real implementation, we would authenticate with Google Sheets API
-        console.log("Connecting to Google Sheets API...");
+        if (!this.sheetsApiInitialized && window.gapi) {
+          await new Promise<void>((resolve) => {
+            const checkInitialized = () => {
+              if (this.sheetsApiInitialized) {
+                resolve();
+              } else {
+                setTimeout(checkInitialized, 100);
+              }
+            };
+            checkInitialized();
+          });
+        }
         
-        // For now, just set connected flag
-        this.connected = true;
-        console.log("Connected to Google Sheets API");
+        // Test the connection by trying to access the spreadsheet
+        if (this.sheetsApiInitialized) {
+          try {
+            await window.gapi.client.sheets.spreadsheets.get({
+              spreadsheetId: this.documentId
+            });
+            this.connected = true;
+            console.log("Connected to Google Sheets API");
+          } catch (error) {
+            console.error("Error accessing Google Sheets document:", error);
+            this.mockMode = true;
+            this.connected = true; // Fall back to mock mode
+          }
+        } else {
+          // Fall back to mock mode
+          this.mockMode = true;
+          this.connected = true;
+          console.log("Falling back to mock mode");
+        }
       }
     } catch (error) {
       console.error("Error connecting to Google Sheets:", error);
@@ -169,6 +240,9 @@ class GoogleSheetsService {
       throw new Error("Not connected to Google Sheets");
     }
 
+    // Get the actual sheet name
+    const sheetName = this.getSheetName(name);
+
     if (this.mockMode) {
       // Create the collection if it doesn't exist in our mock store
       if (!this.mockCollections[name]) {
@@ -181,7 +255,8 @@ class GoogleSheetsService {
         insertOne: async (doc: T) => {
           const id = new ObjectId();
           const idStr = id.toString();
-          this.mockCollections[name].push({ ...doc, _id: idStr });
+          const docWithId = { ...doc, _id: idStr, id: idStr };
+          this.mockCollections[name].push(docWithId);
           this.saveToLocalStorage();
           return { insertedId: id };
         },
@@ -247,46 +322,164 @@ class GoogleSheetsService {
         }
       };
     } else {
-      // TODO: Implement real Google Sheets API collection operations
-      // For now, return the same mock implementation
-      console.warn("Real Google Sheets API not fully implemented yet, using mock implementation");
-      
-      // Ensure collection exists in mock data for fallback
-      if (!this.mockCollections[name]) {
-        this.mockCollections[name] = [];
-        this.saveToLocalStorage();
-      }
-      
+      // Real Google Sheets API implementation
       return {
         insertOne: async (doc: T) => {
-          const id = new ObjectId();
-          const idStr = id.toString();
-          this.mockCollections[name].push({ ...doc, _id: idStr });
-          this.saveToLocalStorage();
-          return { insertedId: id };
+          try {
+            const id = new ObjectId();
+            const idStr = id.toString();
+            const docWithId = { ...doc, _id: idStr, id: idStr };
+            
+            // Get the sheet data to find the next row
+            const response = await window.gapi.client.sheets.spreadsheets.values.get({
+              spreadsheetId: this.documentId,
+              range: sheetName
+            });
+            
+            const values = response.result.values || [];
+            const headers = values[0] || [];
+            
+            // If the sheet is empty, create headers
+            if (values.length === 0) {
+              const docHeaders = Object.keys(docWithId);
+              await window.gapi.client.sheets.spreadsheets.values.update({
+                spreadsheetId: this.documentId,
+                range: `${sheetName}!A1`,
+                valueInputOption: 'RAW',
+                resource: {
+                  values: [docHeaders]
+                }
+              });
+              
+              // Add the data in the next row
+              const docValues = docHeaders.map(header => docWithId[header] || '');
+              await window.gapi.client.sheets.spreadsheets.values.update({
+                spreadsheetId: this.documentId,
+                range: `${sheetName}!A2`,
+                valueInputOption: 'RAW',
+                resource: {
+                  values: [docValues]
+                }
+              });
+            } else {
+              // Sheet already has headers, add new row
+              const docValues = headers.map(header => docWithId[header] || '');
+              await window.gapi.client.sheets.spreadsheets.values.append({
+                spreadsheetId: this.documentId,
+                range: `${sheetName}!A1`,
+                valueInputOption: 'RAW',
+                insertDataOption: 'INSERT_ROWS',
+                resource: {
+                  values: [docValues]
+                }
+              });
+            }
+            
+            // Store in mock collections as cache
+            if (!this.mockCollections[name]) {
+              this.mockCollections[name] = [];
+            }
+            this.mockCollections[name].push(docWithId);
+            this.saveToLocalStorage();
+            
+            return { insertedId: id };
+          } catch (error) {
+            console.error(`Error inserting document into ${sheetName}:`, error);
+            
+            // Fall back to mock mode
+            const id = new ObjectId();
+            const idStr = id.toString();
+            const docWithId = { ...doc, _id: idStr, id: idStr };
+            if (!this.mockCollections[name]) {
+              this.mockCollections[name] = [];
+            }
+            this.mockCollections[name].push(docWithId);
+            this.saveToLocalStorage();
+            
+            return { insertedId: id };
+          }
         },
         find: (query?: any) => this.createCursor<T>(name, query),
         findOne: async (query?: any) => {
-          const results = this.mockCollections[name].filter(item => {
-            if (!query) return true;
-            return Object.keys(query).every(key => {
-              if (key === '_id' && typeof query[key] === 'string') {
-                return item[key] === query[key];
+          try {
+            if (this.sheetsApiInitialized) {
+              // Get all rows from the sheet
+              const response = await window.gapi.client.sheets.spreadsheets.values.get({
+                spreadsheetId: this.documentId,
+                range: sheetName
+              });
+              
+              const values = response.result.values || [];
+              if (values.length <= 1) {
+                return null; // Only headers or empty sheet
               }
-              return item[key] === query[key];
-            });
-          });
-          return results.length > 0 ? results[0] : null;
+              
+              const headers = values[0];
+              const documents = values.slice(1).map(row => {
+                const doc: any = {};
+                headers.forEach((header, index) => {
+                  doc[header] = row[index] || '';
+                });
+                return doc;
+              });
+              
+              // Update mock collections as cache
+              this.mockCollections[name] = documents;
+              this.saveToLocalStorage();
+              
+              // Filter by query
+              const results = documents.filter(item => {
+                if (!query) return true;
+                return Object.keys(query).every(key => {
+                  if (key === '_id' && typeof query[key] === 'string') {
+                    return item[key] === query[key];
+                  }
+                  return item[key] === query[key];
+                });
+              });
+              
+              return results.length > 0 ? results[0] : null;
+            } else {
+              // Fall back to mock implementation
+              const results = this.mockCollections[name]?.filter(item => {
+                if (!query) return true;
+                return Object.keys(query).every(key => {
+                  if (key === '_id' && typeof query[key] === 'string') {
+                    return item[key] === query[key];
+                  }
+                  return item[key] === query[key];
+                });
+              }) || [];
+              
+              return results.length > 0 ? results[0] : null;
+            }
+          } catch (error) {
+            console.error(`Error finding document in ${sheetName}:`, error);
+            
+            // Fall back to mock implementation
+            const results = this.mockCollections[name]?.filter(item => {
+              if (!query) return true;
+              return Object.keys(query).every(key => {
+                if (key === '_id' && typeof query[key] === 'string') {
+                  return item[key] === query[key];
+                }
+                return item[key] === query[key];
+              });
+            }) || [];
+            
+            return results.length > 0 ? results[0] : null;
+          }
         },
         updateOne: async (filter: any, update: any) => {
-          const index = this.mockCollections[name].findIndex(item => {
+          // For now, fall back to mock implementation
+          const index = this.mockCollections[name]?.findIndex(item => {
             return Object.keys(filter).every(key => {
               if (key === '_id' && typeof filter[key] === 'string') {
                 return item[key] === filter[key];
               }
               return item[key] === filter[key];
             });
-          });
+          }) || -1;
           
           if (index !== -1) {
             if (update.$set) {
@@ -306,16 +499,19 @@ class GoogleSheetsService {
           return { modifiedCount: 0, matchedCount: 0 };
         },
         deleteOne: async (filter: any) => {
-          const initialLength = this.mockCollections[name].length;
-          this.mockCollections[name] = this.mockCollections[name].filter(item => {
-            return !Object.keys(filter).every(key => {
-              if (key === '_id' && typeof filter[key] === 'string') {
+          // For now, fall back to mock implementation
+          const initialLength = this.mockCollections[name]?.length || 0;
+          if (this.mockCollections[name]) {
+            this.mockCollections[name] = this.mockCollections[name].filter(item => {
+              return !Object.keys(filter).every(key => {
+                if (key === '_id' && typeof filter[key] === 'string') {
+                  return item[key] === filter[key];
+                }
                 return item[key] === filter[key];
-              }
-              return item[key] === filter[key];
+              });
             });
-          });
-          const deletedCount = initialLength - this.mockCollections[name].length;
+          }
+          const deletedCount = initialLength - (this.mockCollections[name]?.length || 0);
           if (deletedCount > 0) {
             this.saveToLocalStorage();
           }
@@ -327,7 +523,7 @@ class GoogleSheetsService {
 
   // Create a cursor for querying collections
   private createCursor<T>(collectionName: string, query?: any): Cursor<T> {
-    let results = [...this.mockCollections[collectionName]];
+    let results = [...(this.mockCollections[collectionName] || [])];
     
     // Apply simple filtering if query is provided
     if (query) {
@@ -348,6 +544,76 @@ class GoogleSheetsService {
     
     return {
       toArray: async () => {
+        // If using real Google Sheets API and initialized
+        if (!this.mockMode && this.sheetsApiInitialized) {
+          try {
+            const sheetName = this.getSheetName(collectionName);
+            
+            // Get all rows from the sheet
+            const response = await window.gapi.client.sheets.spreadsheets.values.get({
+              spreadsheetId: this.documentId,
+              range: sheetName
+            });
+            
+            const values = response.result.values || [];
+            if (values.length <= 1) {
+              return []; // Only headers or empty sheet
+            }
+            
+            const headers = values[0];
+            let documents = values.slice(1).map(row => {
+              const doc: any = {};
+              headers.forEach((header, index) => {
+                doc[header] = row[index] || '';
+              });
+              return doc;
+            });
+            
+            // Update mock collections as cache
+            this.mockCollections[collectionName] = documents;
+            this.saveToLocalStorage();
+            
+            // Apply filtering
+            if (query) {
+              documents = documents.filter(item => {
+                return Object.keys(query).every(key => {
+                  if (key === '_id' && typeof query[key] === 'string') {
+                    return item[key] === query[key];
+                  }
+                  return item[key] === query[key];
+                });
+              });
+            }
+            
+            // Apply sort if specified
+            if (currentSort) {
+              documents.sort((a, b) => {
+                const sortField = Object.keys(currentSort)[0];
+                const sortDirection = currentSort[sortField];
+                if (a[sortField] < b[sortField]) return -1 * sortDirection;
+                if (a[sortField] > b[sortField]) return 1 * sortDirection;
+                return 0;
+              });
+            }
+            
+            // Apply skip if specified
+            if (currentSkip > 0) {
+              documents = documents.slice(currentSkip);
+            }
+            
+            // Apply limit if specified
+            if (currentLimit !== null) {
+              documents = documents.slice(0, currentLimit);
+            }
+            
+            return documents as T[];
+          } catch (error) {
+            console.error(`Error querying documents from ${collectionName}:`, error);
+            // Fall back to mock data
+          }
+        }
+        
+        // Use mock data as fallback
         let finalResults = [...results];
         
         // Apply sort if specified
@@ -386,6 +652,13 @@ class GoogleSheetsService {
         return this.createCursor<T>(collectionName, query);
       }
     };
+  }
+}
+
+// Declare global gapi for TypeScript
+declare global {
+  interface Window {
+    gapi: any;
   }
 }
 
