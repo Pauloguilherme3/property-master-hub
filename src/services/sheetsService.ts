@@ -655,12 +655,5 @@ class GoogleSheetsService {
   }
 }
 
-// Declare global gapi for TypeScript
-declare global {
-  interface Window {
-    gapi: any;
-  }
-}
-
 // Singleton instance
 export const sheetsService = new GoogleSheetsService();

@@ -259,12 +259,5 @@ class GoogleDriveService {
   }
 }
 
-// Add Google Drive API declaration for TypeScript
-declare global {
-  interface Window {
-    gapi: any;
-  }
-}
-
 // Export singleton instance
 export const driveService = new GoogleDriveService();

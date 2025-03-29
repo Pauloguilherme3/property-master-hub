@@ -34,6 +34,11 @@ class GoogleSheetsService {
     }
   }
 
+  // Get a collection from Google Sheets
+  getCollection<T = any>(name: string) {
+    return sheetsService.getCollection<T>(name);
+  }
+
   // Add a document to a collection
   async addDocument(collectionName: string, data: any): Promise<{ id: string }> {
     if (!this.isConnectedToSheets()) {
