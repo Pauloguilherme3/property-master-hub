@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -5,8 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
-import { Navbar } from "./components/layout/Navbar";
-import { Sidebar } from "./components/layout/Sidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "./components/layout/AppSidebar";
 import ProtectedRoute from "./components/ui/ProtectedRoute";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -55,28 +56,25 @@ const PageTransition = ({ children }: { children: React.ReactNode }) => {
 };
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-  
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar 
-        isOpen={isSidebarOpen} 
-        closeSidebar={() => setIsSidebarOpen(false)} 
-      />
-      <div className="flex-1">
-        <Navbar 
-          toggleSidebar={toggleSidebar} 
-          isSidebarOpen={isSidebarOpen} 
-        />
-        <main className="pt-16 min-h-screen">
-          <PageTransition>{children}</PageTransition>
-        </main>
+    <SidebarProvider>
+      <div className="flex min-h-screen w-full">
+        <AppSidebar />
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+            <SidebarTrigger className="-ml-1" />
+            <div className="flex items-center space-x-2">
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600">
+                PropMaster
+              </span>
+            </div>
+          </header>
+          <main className="flex-1 overflow-auto">
+            <PageTransition>{children}</PageTransition>
+          </main>
+        </SidebarInset>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
