@@ -1,9 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Empreendimento } from "@/types";
 import { getDocument } from "@/services/dbService";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { UserRole } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,12 +25,17 @@ import {
   Tag,
   Home
 } from "lucide-react";
+import { EditEmpreendimentoImages } from "@/components/forms/EditEmpreendimentoImages";
 
 const EmpreendimentoPersonalizado = () => {
   const { id } = useParams<{ id: string }>();
   const [empreendimento, setEmpreendimento] = useState<Empreendimento | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { hasPermission } = useAuth();
+  
+  // Check if user is admin
+  const isAdmin = hasPermission([UserRole.ADMINISTRADOR]);
 
   useEffect(() => {
     const fetchEmpreendimento = async () => {
@@ -62,6 +68,11 @@ const EmpreendimentoPersonalizado = () => {
 
     fetchEmpreendimento();
   }, [id, toast]);
+
+  // Update empreendimento function
+  const handleEmpreendimentoUpdate = (updatedEmpreendimento: Empreendimento) => {
+    setEmpreendimento(updatedEmpreendimento);
+  };
 
   if (isLoading) {
     return (
@@ -143,6 +154,15 @@ const EmpreendimentoPersonalizado = () => {
       <div className="container mx-auto px-4 py-8 -mt-16 relative z-10">
         <Card className="shadow-xl border-none">
           <CardContent className="p-6 md:p-8">
+            {/* Admin Image Edit Component */}
+            {isAdmin && (
+              <EditEmpreendimentoImages
+                empreendimento={empreendimento}
+                onUpdate={handleEmpreendimentoUpdate}
+              />
+            )}
+            
+            {/* Main content grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Informações principais */}
               <div className="md:col-span-2">

@@ -1,7 +1,8 @@
-
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
+import { UserRole } from "@/types";
 import { 
   Card, 
   CardContent,
@@ -18,22 +19,32 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ChevronLeft, Home, MapPin, Calendar, Building, Ruler, User, Phone, Mail, ArrowRight, CheckCircle, XCircle, Clock } from "lucide-react";
 import { mockEmpreendimentos, mockUnidades, getStatusUnidade } from "@/utils/animations";
 import { formatCurrency } from "@/utils/animations";
+import { EditEmpreendimentoImages } from "@/components/forms/EditEmpreendimentoImages";
 
 const EmpreendimentoDetalhePage = () => {
   const { id } = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState("informacoes");
+  const [empreendimento, setEmpreendimento] = useState(null);
+  const { hasPermission } = useAuth();
+  
+  // Check if user is admin
+  const isAdmin = hasPermission([UserRole.ADMINISTRADOR]);
   
   // Fetching empreendimento data
-  const { data: empreendimento, isLoading: loadingEmpreendimento } = useQuery({
+  const { data: empreendimentoData, isLoading: loadingEmpreendimento } = useQuery({
     queryKey: ["empreendimento", id],
     queryFn: async () => {
       // Este seria uma chamada de API em uma aplicação real
       await new Promise(resolve => setTimeout(resolve, 1000));
       const resultado = mockEmpreendimentos.find(e => e.id === id);
       if (!resultado) throw new Error("Empreendimento não encontrado");
+      setEmpreendimento(resultado);
       return resultado;
     }
   });
+  
+  // Use local state or fetched data
+  const currentEmpreendimento = empreendimento || empreendimentoData;
   
   // Fetching unidades data
   const { data: unidades = [], isLoading: loadingUnidades } = useQuery({
@@ -47,6 +58,11 @@ const EmpreendimentoDetalhePage = () => {
   });
   
   const isLoading = loadingEmpreendimento || loadingUnidades;
+  
+  // Update empreendimento function
+  const handleEmpreendimentoUpdate = (updatedEmpreendimento) => {
+    setEmpreendimento(updatedEmpreendimento);
+  };
   
   // Calcular estatísticas das unidades
   const estatisticasUnidades = {
@@ -74,7 +90,7 @@ const EmpreendimentoDetalhePage = () => {
     );
   }
   
-  if (!empreendimento) {
+  if (!currentEmpreendimento) {
     return (
       <div className="container py-8 text-center">
         <Building className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
@@ -110,15 +126,23 @@ const EmpreendimentoDetalhePage = () => {
           </Link>
         </div>
         
+        {/* Admin Image Edit Component */}
+        {isAdmin && (
+          <EditEmpreendimentoImages
+            empreendimento={currentEmpreendimento}
+            onUpdate={handleEmpreendimentoUpdate}
+          />
+        )}
+        
         <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
           <div>
             <div className="relative h-[300px] md:h-[400px] overflow-hidden rounded-lg mb-4">
               <img 
-                src={empreendimento.imagens[0]} 
-                alt={empreendimento.nome} 
+                src={currentEmpreendimento.imagens[0]} 
+                alt={currentEmpreendimento.nome} 
                 className="w-full h-full object-cover"
               />
-              {empreendimento.destaque && (
+              {currentEmpreendimento.destaque && (
                 <Badge className="absolute top-4 right-4 bg-primary text-primary-foreground">
                   Destaque
                 </Badge>
@@ -126,11 +150,11 @@ const EmpreendimentoDetalhePage = () => {
             </div>
             
             <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-              {empreendimento.imagens.slice(1).map((imagem, index) => (
+              {currentEmpreendimento.imagens.slice(1).map((imagem, index) => (
                 <div key={index} className="h-20 w-32 flex-shrink-0 rounded overflow-hidden">
                   <img 
                     src={imagem} 
-                    alt={`${empreendimento.nome} - Imagem ${index + 2}`} 
+                    alt={`${currentEmpreendimento.nome} - Imagem ${index + 2}`} 
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -138,38 +162,38 @@ const EmpreendimentoDetalhePage = () => {
             </div>
             
             <div className="mb-6">
-              <h1 className="text-3xl font-bold mb-2">{empreendimento.nome}</h1>
+              <h1 className="text-3xl font-bold mb-2">{currentEmpreendimento.nome}</h1>
               <div className="flex items-center text-muted-foreground mb-4">
                 <MapPin className="h-4 w-4 mr-1" />
                 <span>
-                  {empreendimento.endereco}, {empreendimento.cidade}, {empreendimento.estado}
+                  {currentEmpreendimento.endereco}, {currentEmpreendimento.cidade}, {currentEmpreendimento.estado}
                 </span>
               </div>
               <div className="flex flex-wrap gap-2 mb-4">
                 <Badge variant="outline" className="flex items-center">
                   <Building className="h-3 w-3 mr-1" />
-                  {empreendimento.tipoImovel === "lote" ? "Lote" : 
-                    empreendimento.tipoImovel === "casa" ? "Casa" : 
-                    empreendimento.tipoImovel === "apartamento" ? "Apartamento" : "Comercial"}
+                  {currentEmpreendimento.tipoImovel === "lote" ? "Lote" : 
+                    currentEmpreendimento.tipoImovel === "casa" ? "Casa" : 
+                    currentEmpreendimento.tipoImovel === "apartamento" ? "Apartamento" : "Comercial"}
                 </Badge>
                 <Badge variant="outline" className="flex items-center">
                   <Ruler className="h-3 w-3 mr-1" />
-                  {empreendimento.area}m²
+                  {currentEmpreendimento.area}m²
                 </Badge>
                 <Badge variant="outline" className="flex items-center">
                   <Calendar className="h-3 w-3 mr-1" />
-                  Entrega: {new Date(empreendimento.previsaoEntrega).toLocaleDateString("pt-BR", { month: "short", year: "numeric" })}
+                  Entrega: {new Date(currentEmpreendimento.previsaoEntrega).toLocaleDateString("pt-BR", { month: "short", year: "numeric" })}
                 </Badge>
                 <Badge variant="outline" className="flex items-center">
                   <Building className="h-3 w-3 mr-1" />
-                  {empreendimento.construtora}
+                  {currentEmpreendimento.construtora}
                 </Badge>
               </div>
               <p className="text-lg mb-4">
-                A partir de <span className="font-bold">{formatCurrency(empreendimento.preco)}</span>
+                A partir de <span className="font-bold">{formatCurrency(currentEmpreendimento.preco)}</span>
               </p>
               <p className="text-muted-foreground mb-4">
-                {empreendimento.descricao}
+                {currentEmpreendimento.descricao}
               </p>
             </div>
           </div>
@@ -210,7 +234,7 @@ const EmpreendimentoDetalhePage = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {empreendimento.etapaConstrucao?.map((etapa, index) => (
+                  {currentEmpreendimento.etapaConstrucao?.map((etapa, index) => (
                     <div key={index}>
                       <div className="flex justify-between mb-1">
                         <span className="text-sm font-medium">{etapa.nome}</span>
@@ -269,7 +293,7 @@ const EmpreendimentoDetalhePage = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p>
-                  {empreendimento.descricao}
+                  {currentEmpreendimento.descricao}
                 </p>
                 
                 <h3 className="text-lg font-semibold mt-4">Especificações</h3>
@@ -279,9 +303,9 @@ const EmpreendimentoDetalhePage = () => {
                     <div>
                       <p className="text-sm text-muted-foreground">Tipo</p>
                       <p className="font-medium">
-                        {empreendimento.tipoImovel === "lote" ? "Lote" : 
-                          empreendimento.tipoImovel === "casa" ? "Casa" : 
-                          empreendimento.tipoImovel === "apartamento" ? "Apartamento" : "Comercial"}
+                        {currentEmpreendimento.tipoImovel === "lote" ? "Lote" : 
+                          currentEmpreendimento.tipoImovel === "casa" ? "Casa" : 
+                          currentEmpreendimento.tipoImovel === "apartamento" ? "Apartamento" : "Comercial"}
                       </p>
                     </div>
                   </div>
@@ -289,7 +313,7 @@ const EmpreendimentoDetalhePage = () => {
                     <Ruler className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="text-sm text-muted-foreground">Área</p>
-                      <p className="font-medium">A partir de {empreendimento.area}m²</p>
+                      <p className="font-medium">A partir de {currentEmpreendimento.area}m²</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -297,7 +321,7 @@ const EmpreendimentoDetalhePage = () => {
                     <div>
                       <p className="text-sm text-muted-foreground">Previsão de Entrega</p>
                       <p className="font-medium">
-                        {new Date(empreendimento.previsaoEntrega).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
+                        {new Date(currentEmpreendimento.previsaoEntrega).toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
                       </p>
                     </div>
                   </div>
@@ -305,7 +329,7 @@ const EmpreendimentoDetalhePage = () => {
                     <Building className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="text-sm text-muted-foreground">Construtora</p>
-                      <p className="font-medium">{empreendimento.construtora}</p>
+                      <p className="font-medium">{currentEmpreendimento.construtora}</p>
                     </div>
                   </div>
                 </div>
@@ -379,7 +403,7 @@ const EmpreendimentoDetalhePage = () => {
             </Card>
             
             <Button variant="default" asChild>
-              <Link to={`/empreendimentos/${empreendimento.id}/mapa`} className="flex items-center">
+              <Link to={`/empreendimentos/${currentEmpreendimento.id}/mapa`} className="flex items-center">
                 Ver Todas as Unidades no Mapa
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
@@ -404,7 +428,7 @@ const EmpreendimentoDetalhePage = () => {
                     </p>
                     <Badge variant="outline" className="mx-auto flex items-center w-fit">
                       <MapPin className="h-3 w-3 mr-1" />
-                      {empreendimento.cidade}, {empreendimento.estado}
+                      {currentEmpreendimento.cidade}, {currentEmpreendimento.estado}
                     </Badge>
                   </div>
                 </div>
@@ -422,11 +446,11 @@ const EmpreendimentoDetalhePage = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {empreendimento.imagens.map((imagem, index) => (
+                  {currentEmpreendimento.imagens.map((imagem, index) => (
                     <div key={index} className="aspect-square overflow-hidden rounded-md">
                       <img 
                         src={imagem} 
-                        alt={`${empreendimento.nome} - Imagem ${index + 1}`} 
+                        alt={`${currentEmpreendimento.nome} - Imagem ${index + 1}`} 
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                       />
                     </div>
@@ -435,7 +459,7 @@ const EmpreendimentoDetalhePage = () => {
               </CardContent>
             </Card>
             
-            {empreendimento.tourVirtual && (
+            {currentEmpreendimento.tourVirtual && (
               <Card>
                 <CardHeader>
                   <CardTitle>Tour Virtual</CardTitle>
