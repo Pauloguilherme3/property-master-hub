@@ -30,7 +30,7 @@ import LeadsManagement from "./pages/LeadsManagement";
 import Properties from "./pages/Properties";
 import SheetsTest from "./pages/SheetsTest";
 import DriveTest from "./pages/DriveTest";
-import CreatePropertyModal from "./components/modals/CreatePropertyModal";
+import { CreatePropertyModal } from "./components/modals/CreatePropertyModal";
 
 const queryClient = new QueryClient();
 

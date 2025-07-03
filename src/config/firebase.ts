@@ -20,8 +20,8 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const firestore = getFirestore(app);
+const auth = getAuth();
+const firestore = getFirestore();
 let analytics = null;
 
 // Initialize Analytics in browser environment
@@ -29,7 +29,7 @@ if (typeof window !== 'undefined') {
   const initAnalytics = async () => {
     try {
       if (await isSupported()) {
-        analytics = getAnalytics(app);
+        analytics = getAnalytics();
         console.log("Firebase Analytics initialized");
       } else {
         console.log("Analytics not supported in this environment");
