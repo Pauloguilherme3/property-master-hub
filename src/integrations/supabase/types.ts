@@ -328,6 +328,72 @@ export type Database = {
           },
         ]
       }
+      reservas: {
+        Row: {
+          cpf_cliente: string
+          created_at: string
+          criado_por_id: string | null
+          data_visita: string
+          empreendimento_id: string
+          horario: string
+          id: string
+          nome_cliente: string
+          observacoes: string | null
+          status: string
+          telefone_cliente: string
+          tipo_visita: string | null
+          unidade_id: string
+          updated_at: string
+        }
+        Insert: {
+          cpf_cliente: string
+          created_at?: string
+          criado_por_id?: string | null
+          data_visita: string
+          empreendimento_id: string
+          horario: string
+          id?: string
+          nome_cliente: string
+          observacoes?: string | null
+          status?: string
+          telefone_cliente: string
+          tipo_visita?: string | null
+          unidade_id: string
+          updated_at?: string
+        }
+        Update: {
+          cpf_cliente?: string
+          created_at?: string
+          criado_por_id?: string | null
+          data_visita?: string
+          empreendimento_id?: string
+          horario?: string
+          id?: string
+          nome_cliente?: string
+          observacoes?: string | null
+          status?: string
+          telefone_cliente?: string
+          tipo_visita?: string | null
+          unidade_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservas_empreendimento_id_fkey"
+            columns: ["empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "empreendimentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservas_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       unidades: {
         Row: {
           area: number | null
@@ -383,6 +449,10 @@ export type Database = {
       get_user_equipe: {
         Args: { user_id: string }
         Returns: string
+      }
+      is_admin_or_colab: {
+        Args: { _user_id: string }
+        Returns: boolean
       }
     }
     Enums: {

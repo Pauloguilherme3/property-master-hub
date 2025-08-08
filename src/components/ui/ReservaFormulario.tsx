@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { Empreendimento, Unidade, FormaPagamento } from "@/types";
+import { useState, useEffect } from "react";
+import { Empreendimento, Unidade } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -24,7 +24,7 @@ import { ptBR } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { formatCurrency } from "@/utils/animations";
-import { mockFormasPagamento } from "@/utils/animations";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ReservaFormularioProps {
   empreendimento: Empreendimento;
@@ -37,44 +37,80 @@ export function ReservaFormulario({ empreendimento, unidade }: ReservaFormulario
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [telefone, setTelefone] = useState("");
+  const [cpf, setCpf] = useState("");
   const [data, setData] = useState<Date | undefined>(undefined);
-  const [horario, setHorario] = useState("10:00");
+  const [horario, setHorario] = useState("");
   const [tipoVisita, setTipoVisita] = useState<"presencial" | "virtual">("presencial");
-  const [formaPagamentoId, setFormaPagamentoId] = useState("");
   const [observacoes, setObservacoes] = useState("");
+  const [horariosDisponiveis, setHorariosDisponiveis] = useState<string[]>(["09:00","10:00","11:00","14:00","15:00","16:00","17:00"]);
+
+  useEffect(() => {
+    // Carregar horários do Supabase (configuracoes_sistema)
+    (async () => {
+      const { data } = await supabase
+        .from("configuracoes_sistema")
+        .select("valor")
+        .eq("chave", "reserva_horarios")
+        .order("atualizado_em", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const valor = data?.valor as string | null;
+      if (valor) {
+        const arr = valor.split(",").map((s) => s.trim()).filter(Boolean);
+        if (arr.length) setHorariosDisponiveis(arr);
+      }
+    })();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!data) {
+
+    if (!data || !horario || !nome || !telefone || !cpf) {
       toast({
         title: "Erro",
-        description: "Por favor, selecione uma data para a reserva.",
-        variant: "destructive"
+        description: "Preencha nome, telefone, CPF, data e horário.",
+        variant: "destructive",
       });
       return;
     }
-    
+
     setIsSubmitting(true);
-    
-    // Simular chamada de API
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
+
+    const payload = {
+      empreendimento_id: empreendimento.id,
+      unidade_id: unidade.id,
+      nome_cliente: nome,
+      telefone_cliente: telefone,
+      cpf_cliente: cpf,
+      data_visita: format(data, "yyyy-MM-dd"),
+      horario,
+      tipo_visita: tipoVisita,
+      observacoes,
+      status: "pendente",
+    };
+
+    const { error } = await supabase.from("reservas").insert(payload);
+
+    if (error) {
+      toast({ title: "Erro ao reservar", description: error.message, variant: "destructive" });
+      setIsSubmitting(false);
+      return;
+    }
+
     toast({
-      title: "Reserva Enviada",
-      description: `Sua reserva para ${unidade.numero} no empreendimento ${empreendimento.nome} foi enviada para ${data ? format(data, "PPP", { locale: ptBR }) : ""}`,
+      title: "Reserva enviada",
+      description: `Sua reserva para ${unidade.numero} em ${format(data, "PPP", { locale: ptBR })} às ${horario} foi registrada.`,
     });
-    
+
     // Resetar formulário
     setNome("");
     setEmail("");
     setTelefone("");
+    setCpf("");
     setData(undefined);
-    setHorario("10:00");
+    setHorario("");
     setTipoVisita("presencial");
-    setFormaPagamentoId("");
     setObservacoes("");
-    
     setIsSubmitting(false);
   };
 
@@ -93,14 +129,13 @@ export function ReservaFormulario({ empreendimento, unidade }: ReservaFormulario
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">Email (opcional)</Label>
           <Input
             id="email"
             type="email"
             placeholder="Digite seu endereço de email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
           />
         </div>
       </div>
@@ -118,21 +153,14 @@ export function ReservaFormulario({ empreendimento, unidade }: ReservaFormulario
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="tipo-visita">Tipo de Visita</Label>
-          <RadioGroup 
-            value={tipoVisita} 
-            onValueChange={(value) => setTipoVisita(value as "presencial" | "virtual")}
-            className="flex gap-4"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="presencial" id="presencial" />
-              <Label htmlFor="presencial">Presencial</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="virtual" id="virtual" />
-              <Label htmlFor="virtual">Virtual</Label>
-            </div>
-          </RadioGroup>
+          <Label htmlFor="cpf">CPF</Label>
+          <Input
+            id="cpf"
+            placeholder="Digite seu CPF"
+            value={cpf}
+            onChange={(e) => setCpf(e.target.value)}
+            required
+          />
         </div>
       </div>
       
@@ -180,38 +208,14 @@ export function ReservaFormulario({ empreendimento, unidade }: ReservaFormulario
               <SelectValue placeholder="Selecione um horário" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="09:00">09:00</SelectItem>
-              <SelectItem value="10:00">10:00</SelectItem>
-              <SelectItem value="11:00">11:00</SelectItem>
-              <SelectItem value="14:00">14:00</SelectItem>
-              <SelectItem value="15:00">15:00</SelectItem>
-              <SelectItem value="16:00">16:00</SelectItem>
-              <SelectItem value="17:00">17:00</SelectItem>
+              {horariosDisponiveis.map((h) => (
+                <SelectItem key={h} value={h}>{h}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
       </div>
       
-      {unidade.status === "disponivel" && (
-        <div className="space-y-2">
-          <Label htmlFor="forma-pagamento">Forma de Pagamento de Interesse</Label>
-          <Select 
-            value={formaPagamentoId} 
-            onValueChange={setFormaPagamentoId}
-          >
-            <SelectTrigger id="forma-pagamento">
-              <SelectValue placeholder="Selecione uma forma de pagamento" />
-            </SelectTrigger>
-            <SelectContent>
-              {mockFormasPagamento.map(forma => (
-                <SelectItem key={forma.id} value={forma.id}>
-                  {forma.nome} {forma.taxaJuros ? `(${forma.taxaJuros}% a.m.)` : ''}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
       
       <div className="space-y-2">
         <Label htmlFor="observacoes">Observações</Label>
@@ -249,7 +253,7 @@ export function ReservaFormulario({ empreendimento, unidade }: ReservaFormulario
       <Button
         type="submit"
         className="w-full transition-all transform hover:translate-y-[-2px]"
-        disabled={isSubmitting || !data}
+        disabled={isSubmitting || !data || !horario}
       >
         {isSubmitting ? "Enviando..." : "Solicitar Reserva"}
       </Button>

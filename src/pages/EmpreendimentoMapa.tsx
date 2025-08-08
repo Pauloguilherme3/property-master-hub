@@ -19,6 +19,7 @@ import {
   List,
   Building
 } from "lucide-react";
+import EmpreendimentosMap from "@/components/map/EmpreendimentosMap";
 import { Empreendimento } from "@/types";
 import { mockEmpreendimentos } from "@/utils/animations";
 import { useToast } from "@/components/ui/use-toast";
@@ -144,27 +145,7 @@ const EmpreendimentoMapaPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div 
-                className="bg-muted h-[70vh] rounded-md relative flex items-center justify-center"
-                onClick={handleMapInteraction}
-              >
-                <div className="text-center p-6 max-w-md">
-                  <MapPin className="h-12 w-12 mx-auto mb-4 text-primary" />
-                  <h3 className="text-lg font-semibold mb-2">Mapa Interativo em Breve</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Nosso mapa interativo de empreendimentos permitirá que você navegue por localização,
-                    veja detalhes dos empreendimentos e obtenha direções.
-                  </p>
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    {filteredEmpreendimentos.map((empreendimento) => (
-                      <div key={empreendimento.id} className="inline-flex items-center bg-primary/10 text-primary rounded-full px-3 py-1 text-sm">
-                        <MapPin className="h-3 w-3 mr-1" />
-                        {empreendimento.cidade}, {empreendimento.estado}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <EmpreendimentosMap empreendimentos={filteredEmpreendimentos} />
             </CardContent>
           </Card>
         ) : (

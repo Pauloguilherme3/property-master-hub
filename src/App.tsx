@@ -32,6 +32,7 @@ import Properties from "./pages/Properties";
 import SheetsTest from "./pages/SheetsTest";
 import DriveTest from "./pages/DriveTest";
 import { CreatePropertyModal } from "./components/modals/CreatePropertyModal";
+import AdminConfiguracoes from "./pages/AdminConfiguracoes";
 
 const queryClient = new QueryClient();
 
@@ -254,6 +255,14 @@ function App() {
                 element={
                   <AppLayout>
                     <CreatePropertyModal isOpen={true} onClose={() => {}} />
+                  </AppLayout>
+                }
+              />
+              <Route 
+                path="/configuracoes-admin" 
+                element={
+                  <AppLayout>
+                    <AdminConfiguracoes />
                   </AppLayout>
                 } 
               />
