@@ -205,7 +205,11 @@ export default function PropertyMap() {
               <p>No properties found matching your search.</p>
             ) : (
               filteredProperties.map((property) => (
-                <PropertyCard key={property.id} property={property} />
+                <PropertyCard 
+                  key={property.id} 
+                  empreendimento={property} 
+                  onView={() => console.log('View property', property.id)}
+                />
               ))
             )}
           </div>

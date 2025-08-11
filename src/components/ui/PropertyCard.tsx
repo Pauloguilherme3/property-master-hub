@@ -1,81 +1,173 @@
-
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Building } from "lucide-react";
-import { Empreendimento } from "@/types";
+import { Badge } from "@/components/ui/badge";
+import { 
+  MapPin, 
+  Building2, 
+  Ruler, 
+  Eye, 
+  Edit, 
+  MoreVertical,
+  ImageIcon
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface PropertyCardProps {
-  property: Empreendimento;
+  empreendimento: any; // Use any for now since we have the complete Supabase schema
+  onView: () => void;
+  onEdit?: () => void;
 }
 
-export function PropertyCard({ property }: PropertyCardProps) {
-  // Get status in Portuguese
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "disponivel":
-        return "Disponível";
-      case "reservado":
-        return "Reservado";
-      case "vendido":
-        return "Vendido";
-      default:
-        return status;
-    }
-  };
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'ativo':
+      return 'bg-green-500/10 text-green-700 border-green-200 dark:text-green-400';
+    case 'inativo':
+      return 'bg-gray-500/10 text-gray-700 border-gray-200 dark:text-gray-400';
+    case 'vendido':
+      return 'bg-blue-500/10 text-blue-700 border-blue-200 dark:text-blue-400';
+    default:
+      return 'bg-gray-500/10 text-gray-700 border-gray-200 dark:text-gray-400';
+  }
+};
+
+const getStatusLabel = (status: string) => {
+  switch (status) {
+    case 'ativo':
+      return 'Ativo';
+    case 'inativo':
+      return 'Inativo';
+    case 'vendido':
+      return 'Vendido';
+    default:
+      return status;
+  }
+};
+
+export function PropertyCard({ empreendimento, onView, onEdit }: PropertyCardProps) {
+  const [imageError, setImageError] = useState(false);
 
   return (
-    <div className="group overflow-hidden border rounded-lg transition-all hover:shadow-md">
-      <div className="aspect-video bg-muted relative overflow-hidden">
-        {property.imagens && property.imagens.length > 0 ? (
-          <img 
-            src={property.imagens[0]} 
-            alt={property.nome} 
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+    <Card className="group overflow-hidden transition-all duration-300 hover:shadow-lg border-muted">
+      {/* Image Section */}
+      <div className="relative h-48 overflow-hidden bg-muted">
+        {empreendimento.foto_capa_url && !imageError ? (
+          <img
+            src={empreendimento.foto_capa_url}
+            alt={empreendimento.nome}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            onError={() => setImageError(true)}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-muted">
-            <Building className="h-10 w-10 text-muted-foreground" />
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+            <div className="text-center">
+              <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Sem imagem</p>
+            </div>
           </div>
         )}
-        <div className="absolute top-2 right-2 px-2 py-1 text-xs font-medium bg-primary text-white rounded-full">
-          {getStatusLabel(property.status)}
+        
+        {/* Status Badge */}
+        <div className="absolute top-3 left-3">
+          <Badge 
+            variant="secondary" 
+            className={`${getStatusColor(empreendimento.status_empreendimento)} backdrop-blur-sm`}
+          >
+            {getStatusLabel(empreendimento.status_empreendimento)}
+          </Badge>
         </div>
-        {property.destaque && (
-          <div className="absolute top-2 left-2 px-2 py-1 text-xs font-medium bg-amber-500 text-white rounded-full">
-            Destaque
-          </div>
-        )}
+
+        {/* Actions Menu */}
+        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="secondary" 
+                size="sm" 
+                className="h-8 w-8 p-0 backdrop-blur-sm bg-background/80 hover:bg-background/90"
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem onClick={onView}>
+                <Eye className="h-4 w-4 mr-2" />
+                Ver detalhes
+              </DropdownMenuItem>
+              {onEdit && (
+                <DropdownMenuItem onClick={onEdit}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
-      <div className="p-4">
-        <h3 className="font-semibold truncate">{property.nome}</h3>
-        <p className="text-sm text-muted-foreground truncate">{property.cidade}, {property.estado}</p>
-        
-        <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
-          {property.dormitorios > 0 && (
-            <span>{property.dormitorios} {property.dormitorios === 1 ? 'Dormitório' : 'Dormitórios'}</span>
-          )}
-          {property.banheiros > 0 && (
-            <span>• {property.banheiros} {property.banheiros === 1 ? 'Banheiro' : 'Banheiros'}</span>
-          )}
-          {property.area > 0 && (
-            <span>• {property.area}m²</span>
+      {/* Content Section */}
+      <CardHeader className="pb-3">
+        <div className="space-y-1">
+          <CardTitle className="text-lg leading-tight line-clamp-1">
+            {empreendimento.nome}
+          </CardTitle>
+          {empreendimento.titulo && (
+            <p className="text-sm text-muted-foreground line-clamp-1">
+              {empreendimento.titulo}
+            </p>
           )}
         </div>
-        
-        <div className="mt-4 flex justify-between items-center">
-          <span className="font-bold">
-            {new Intl.NumberFormat('pt-BR', { 
-              style: 'currency', 
-              currency: 'BRL',
-              maximumFractionDigits: 0 
-            }).format(property.preco)}
-          </span>
-          <Button variant="outline" size="sm" asChild>
-            <Link to={`/empreendimentos/${property.id}`}>Detalhes</Link>
-          </Button>
+      </CardHeader>
+
+      <CardContent className="pt-0">
+        {/* Location */}
+        {empreendimento.endereco_completo && (
+          <div className="flex items-start gap-2 mb-3">
+            <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+              {empreendimento.endereco_completo}
+            </p>
+          </div>
+        )}
+
+        {/* Description */}
+        {empreendimento.descricao && (
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-3 leading-relaxed">
+            {empreendimento.descricao}
+          </p>
+        )}
+
+        {/* Metrics */}
+        <div className="flex items-center gap-4 mb-4">
+          {empreendimento.metragem_min && empreendimento.metragem_max && (
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <Ruler className="h-4 w-4" />
+              <span>
+                {empreendimento.metragem_min === empreendimento.metragem_max 
+                  ? `${empreendimento.metragem_min}m²`
+                  : `${empreendimento.metragem_min}-${empreendimento.metragem_max}m²`
+                }
+              </span>
+            </div>
+          )}
         </div>
-      </div>
-    </div>
+
+        {/* Action Button */}
+        <Button 
+          onClick={onView} 
+          className="w-full"
+          variant="outline"
+        >
+          <Building2 className="h-4 w-4 mr-2" />
+          Ver Empreendimento
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

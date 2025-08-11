@@ -1,6 +1,7 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link, useNavigate } from "react-router-dom";
 import { 
   Card, 
   CardContent, 
@@ -24,111 +25,115 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { 
-  Slider 
-} from "@/components/ui/slider";
-import { 
   Grid2X2, 
   List, 
   Search, 
   SlidersHorizontal, 
   X, 
-  Plus 
+  Plus, 
+  Building2,
+  MapPin,
+  Eye,
+  Edit
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Empreendimento, FiltroEmpreendimento, UserRole } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
-import { mockEmpreendimentos } from "@/utils/animations";
-import { dataService } from "@/services/dataService";
-import { CreatePropertyModal } from "@/components/modals/CreatePropertyModal";
+import { supabase } from "@/integrations/supabase/client";
+import { PropertyCard } from "@/components/ui/PropertyCard";
+import { UserRole } from "@/types";
 
 export default function Empreendimentos() {
-  const { hasPermission } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [filtros, setFiltros] = useState<FiltroEmpreendimento>({});
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [filtros, setFiltros] = useState<any>({});
+  const [categorias, setCategorias] = useState<any[]>([]);
+  const [cidades, setCidades] = useState<any[]>([]);
 
   // Obter dados dos empreendimentos
   const { data: empreendimentos = [], isLoading, refetch } = useQuery({
     queryKey: ["empreendimentos"],
     queryFn: async () => {
       try {
-        // Tenta buscar empreendimentos do serviço de dados
-        await dataService.initialize();
-        const properties = await dataService.getAllDocuments<Empreendimento>("empreendimentos");
+        const { data, error } = await supabase
+          .from('empreendimentos')
+          .select(`
+            *,
+            empreendimento_categorias(categoria_id),
+            empreendimento_cidades(cidade_id),
+            empreendimento_construtoras(construtora_id)
+          `)
+          .eq('status_empreendimento', 'ativo');
         
-        if (properties.length === 0) {
-          return mockEmpreendimentos;
-        }
-        
-        return properties;
+        if (error) throw error;
+        return data || [];
       } catch (error) {
         console.error("Erro ao buscar empreendimentos:", error);
-        // Fallback para dados simulados
-        return mockEmpreendimentos;
+        toast({
+          title: "Erro",
+          description: "Erro ao carregar empreendimentos",
+          variant: "destructive"
+        });
+        return [];
       }
     }
   });
 
+  // Carregar filtros
+  useEffect(() => {
+    const loadFilters = async () => {
+      try {
+        const [categoriasResult, cidadesResult] = await Promise.allSettled([
+          supabase.from('categorias').select('*').eq('ativo', true),
+          supabase.from('cidades').select('*').eq('ativo', true)
+        ]);
+
+        if (categoriasResult.status === 'fulfilled' && categoriasResult.value.data) {
+          setCategorias(categoriasResult.value.data);
+        }
+        if (cidadesResult.status === 'fulfilled' && cidadesResult.value.data) {
+          setCidades(cidadesResult.value.data);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar filtros:', error);
+      }
+    };
+
+    loadFilters();
+  }, []);
+
   // Filtrar empreendimentos
   const empreendimentosFiltrados = empreendimentos.filter(emp => {
     const matchesSearch = 
-      emp.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.endereco.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.cidade.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.estado.toLowerCase().includes(searchTerm.toLowerCase());
+      emp.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.endereco_completo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.titulo?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesFilters = 
-      (filtros.tipoImovel ? emp.tipoImovel === filtros.tipoImovel : true) &&
-      (filtros.cidade ? emp.cidade.includes(filtros.cidade) : true) &&
-      (filtros.estado ? emp.estado === filtros.estado : true) &&
-      (filtros.precoMin ? emp.preco >= filtros.precoMin : true) &&
-      (filtros.precoMax ? emp.preco <= filtros.precoMax : true) &&
-      (filtros.dormitoriosMin ? emp.dormitorios >= filtros.dormitoriosMin : true) &&
-      (filtros.areamin ? emp.area >= filtros.areamin : true) &&
-      (filtros.areaMax ? emp.area <= filtros.areaMax : true) &&
-      (filtros.status ? emp.status === filtros.status : true);
+      (filtros.metragemMin ? (emp.metragem_min || 0) >= filtros.metragemMin : true) &&
+      (filtros.metragemMax ? (emp.metragem_max || 0) <= filtros.metragemMax : true);
     
     return matchesSearch && matchesFilters;
   });
 
-  // Obter valores únicos para os filtros
-  const tiposImoveis = [...new Set(empreendimentos.map(e => e.tipoImovel))];
-  const cidades = [...new Set(empreendimentos.map(e => e.cidade))];
-  const estados = [...new Set(empreendimentos.map(e => e.estado))];
-
-  const handleFilterTipoImovel = (value: string) => {
-    setFiltros(prev => ({
-      ...prev,
-      tipoImovel: value === "todos" ? undefined : value
-    }));
-  };
-
-  const handleFilterCidade = (value: string) => {
-    setFiltros(prev => ({
-      ...prev,
-      cidade: value === "todas" ? undefined : value
-    }));
-  };
-
   const handleAddProperty = () => {
-    setIsCreateModalOpen(true);
+    navigate('/empreendimento-cadastro');
   };
 
-  const handleCloseModal = () => {
-    setIsCreateModalOpen(false);
-    refetch(); // Atualiza a lista de empreendimentos após adicionar um novo
+  const handleViewProperty = (id: string) => {
+    navigate(`/empreendimentos/${id}`);
   };
 
-  const canManageProperties = hasPermission([
-    UserRole.GERENTE, 
-    UserRole.ADMINISTRADOR,
-    UserRole.GERENTE_PRODUTO
-  ]);
+  const handleEditProperty = (id: string) => {
+    navigate(`/empreendimentos/${id}/editar`);
+  };
+
+  const canManageProperties = user && (user.role === UserRole.ADMINISTRADOR || user.role === UserRole.GERENTE);
 
   return (
     <div className="container py-10 animate-fade-in">
@@ -189,113 +194,28 @@ export default function Empreendimentos() {
                     Use os filtros abaixo para refinar sua busca
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="grid gap-4 md:grid-cols-3">
+                <CardContent className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <h4 className="mb-2 font-medium">Tipo de Imóvel</h4>
-                    <Select onValueChange={handleFilterTipoImovel}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Todos os Tipos" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="todos">Todos os Tipos</SelectItem>
-                        {tiposImoveis.map(tipo => (
-                          <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <h4 className="mb-2 font-medium">Cidade</h4>
-                    <Select onValueChange={handleFilterCidade}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Todas as Cidades" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="todas">Todas as Cidades</SelectItem>
-                        {cidades.map(cidade => (
-                          <SelectItem key={cidade} value={cidade}>{cidade}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <h4 className="mb-2 font-medium">Estado</h4>
-                    <Select onValueChange={(value) => setFiltros(prev => ({ ...prev, estado: value === "todos" ? undefined : value }))}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Todos os Estados" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="todos">Todos os Estados</SelectItem>
-                        {estados.map(estado => (
-                          <SelectItem key={estado} value={estado}>{estado}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="md:col-span-3">
-                    <Separator />
-                  </div>
-
-                  <div>
-                    <h4 className="mb-2 font-medium">Faixa de Preço</h4>
-                    <div className="flex items-center space-x-2">
-                      <Input
-                        type="number"
-                        placeholder="Preço Mínimo"
-                        className="w-full"
-                        value={filtros.precoMin || ""}
-                        onChange={(e) => setFiltros(prev => ({ ...prev, precoMin: Number(e.target.value) }))}
-                      />
-                      <Input
-                        type="number"
-                        placeholder="Preço Máximo"
-                        className="w-full"
-                        value={filtros.precoMax || ""}
-                        onChange={(e) => setFiltros(prev => ({ ...prev, precoMax: Number(e.target.value) }))}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="mb-2 font-medium">Número de Quartos</h4>
-                    <Select onValueChange={(value) => setFiltros(prev => ({ ...prev, dormitoriosMin: Number(value) }))}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Qualquer Número" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="0">Qualquer Número</SelectItem>
-                        <SelectItem value="1">1+</SelectItem>
-                        <SelectItem value="2">2+</SelectItem>
-                        <SelectItem value="3">3+</SelectItem>
-                        <SelectItem value="4">4+</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <h4 className="mb-2 font-medium">Tamanho (m²)</h4>
+                    <h4 className="mb-2 font-medium">Metragem (m²)</h4>
                     <div className="flex items-center space-x-2">
                       <Input
                         type="number"
                         placeholder="Mínimo"
                         className="w-full"
-                        value={filtros.areamin || ""}
-                        onChange={(e) => setFiltros(prev => ({ ...prev, areamin: Number(e.target.value) }))}
+                        value={filtros.metragemMin || ""}
+                        onChange={(e) => setFiltros(prev => ({ ...prev, metragemMin: Number(e.target.value) }))}
                       />
-                       <Input
+                      <Input
                         type="number"
                         placeholder="Máximo"
                         className="w-full"
-                        value={filtros.areaMax || ""}
-                        onChange={(e) => setFiltros(prev => ({ ...prev, areaMax: Number(e.target.value) }))}
+                        value={filtros.metragemMax || ""}
+                        onChange={(e) => setFiltros(prev => ({ ...prev, metragemMax: Number(e.target.value) }))}
                       />
                     </div>
                   </div>
 
-                  <div className="md:col-span-3">
+                  <div className="md:col-span-2">
                     <Button
                       variant="secondary"
                       className="w-full"
@@ -313,41 +233,100 @@ export default function Empreendimentos() {
               </Card>
             )}
 
-            {empreendimentosFiltrados.length === 0 ? (
+            {isLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <div className="h-48 bg-muted rounded-t-lg" />
+                    <CardHeader>
+                      <div className="h-4 bg-muted rounded w-3/4" />
+                      <div className="h-3 bg-muted rounded w-1/2" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-3 bg-muted rounded w-full mb-2" />
+                      <div className="h-6 bg-muted rounded w-20" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : empreendimentosFiltrados.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center space-y-4 py-20">
-                  <h2 className="text-2xl font-semibold">Nenhum resultado encontrado</h2>
-                  <p className="text-muted-foreground">
+                  <Building2 className="h-12 w-12 text-muted-foreground" />
+                  <h2 className="text-2xl font-semibold">Nenhum empreendimento encontrado</h2>
+                  <p className="text-muted-foreground text-center max-w-md">
                     Não encontramos nenhum empreendimento que corresponda aos seus critérios de busca.
                   </p>
+                  {canManageProperties && (
+                    <Button onClick={handleAddProperty}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Adicionar Primeiro Empreendimento
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ) : viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {empreendimentosFiltrados.map(empreendimento => (
-                  <Card key={empreendimento.id}>
-                    <CardHeader>
-                      <CardTitle>{empreendimento.nome}</CardTitle>
-                      <CardDescription>{empreendimento.cidade}, {empreendimento.estado}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p>Preço: {empreendimento.preco}</p>
-                      <Badge>{empreendimento.status}</Badge>
-                    </CardContent>
-                  </Card>
+                  <PropertyCard
+                    key={empreendimento.id}
+                    empreendimento={empreendimento}
+                    onView={() => handleViewProperty(empreendimento.id)}
+                    onEdit={canManageProperties ? () => handleEditProperty(empreendimento.id) : undefined}
+                  />
                 ))}
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4">
                 {empreendimentosFiltrados.map(empreendimento => (
-                  <Card key={empreendimento.id}>
-                    <CardHeader>
-                      <CardTitle>{empreendimento.nome}</CardTitle>
-                      <CardDescription>{empreendimento.cidade}, {empreendimento.estado}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p>Preço: {empreendimento.preco}</p>
-                      <Badge>{empreendimento.status}</Badge>
+                  <Card key={empreendimento.id} className="transition-all hover:shadow-md">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="text-lg font-semibold">{empreendimento.nome}</h3>
+                            <Badge variant="outline">{empreendimento.status_empreendimento}</Badge>
+                          </div>
+                          {empreendimento.endereco_completo && (
+                            <div className="flex items-center text-sm text-muted-foreground mb-2">
+                              <MapPin className="h-4 w-4 mr-1" />
+                              {empreendimento.endereco_completo}
+                            </div>
+                          )}
+                          {empreendimento.descricao && (
+                            <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                              {empreendimento.descricao}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-4 text-sm">
+                            {empreendimento.metragem_min && empreendimento.metragem_max && (
+                              <span className="text-muted-foreground">
+                                {empreendimento.metragem_min}m² - {empreendimento.metragem_max}m²
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 ml-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewProperty(empreendimento.id)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Ver
+                          </Button>
+                          {canManageProperties && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditProperty(empreendimento.id)}
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Editar
+                            </Button>
+                          )}
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -356,11 +335,6 @@ export default function Empreendimentos() {
           </TabsContent>
         </Tabs>
       </div>
-      
-      <CreatePropertyModal 
-        isOpen={isCreateModalOpen}
-        onClose={handleCloseModal}
-      />
     </div>
   );
 }
