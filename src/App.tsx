@@ -20,6 +20,7 @@ import Empreendimentos from "./pages/Empreendimentos";
 import EmpreendimentoDetalhe from "./pages/EmpreendimentoDetalhe";
 import EmpreendimentoPersonalizado from "./pages/EmpreendimentoPersonalizado";
 import EmpreendimentoMapa from "./pages/EmpreendimentoMapa";
+import EmpreendimentoCadastro from "./pages/EmpreendimentoCadastro";
 import Reservas from "./pages/Reservas";
 import Corretores from "./pages/Corretores";
 import DesempenhoCorretores from "./pages/DesempenhoCorretores";
@@ -153,6 +154,14 @@ function App() {
                 element={
                   <AppLayout>
                     <Properties />
+                  </AppLayout>
+                } 
+              />
+              <Route 
+                path="/empreendimentos/cadastro" 
+                element={
+                  <AppLayout>
+                    <EmpreendimentoCadastro />
                   </AppLayout>
                 } 
               />

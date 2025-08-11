@@ -14,6 +14,191 @@ export type Database = {
   }
   public: {
     Tables: {
+      arquivos_empreendimento: {
+        Row: {
+          categoria_arquivo_id: string | null
+          created_at: string | null
+          empreendimento_id: string | null
+          id: string
+          nome_arquivo: string
+          nome_original: string
+          ordem: number | null
+          tamanho: number | null
+          tipo_mime: string | null
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          categoria_arquivo_id?: string | null
+          created_at?: string | null
+          empreendimento_id?: string | null
+          id?: string
+          nome_arquivo: string
+          nome_original: string
+          ordem?: number | null
+          tamanho?: number | null
+          tipo_mime?: string | null
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          categoria_arquivo_id?: string | null
+          created_at?: string | null
+          empreendimento_id?: string | null
+          id?: string
+          nome_arquivo?: string
+          nome_original?: string
+          ordem?: number | null
+          tamanho?: number | null
+          tipo_mime?: string | null
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "arquivos_empreendimento_categoria_arquivo_id_fkey"
+            columns: ["categoria_arquivo_id"]
+            isOneToOne: false
+            referencedRelation: "categorias_arquivo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arquivos_empreendimento_empreendimento_id_fkey"
+            columns: ["empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "empreendimentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campos_personalizados: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          id: string
+          nome: string
+          obrigatorio: boolean | null
+          opcoes: Json | null
+          ordem: number | null
+          tipo: string
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          id?: string
+          nome: string
+          obrigatorio?: boolean | null
+          opcoes?: Json | null
+          ordem?: number | null
+          tipo: string
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          id?: string
+          nome?: string
+          obrigatorio?: boolean | null
+          opcoes?: Json | null
+          ordem?: number | null
+          tipo?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      categorias: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          descricao: string | null
+          id: string
+          nome: string
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      categorias_arquivo: {
+        Row: {
+          created_at: string | null
+          descricao: string | null
+          empreendimento_id: string | null
+          id: string
+          nome: string
+          tipo: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          descricao?: string | null
+          empreendimento_id?: string | null
+          id?: string
+          nome: string
+          tipo: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          descricao?: string | null
+          empreendimento_id?: string | null
+          id?: string
+          nome?: string
+          tipo?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categorias_arquivo_empreendimento_id_fkey"
+            columns: ["empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "empreendimentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cidades: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          estado: string
+          id: string
+          nome: string
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          estado: string
+          id?: string
+          nome: string
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          estado?: string
+          id?: string
+          nome?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       configuracoes: {
         Row: {
           chave: string
@@ -82,29 +267,284 @@ export type Database = {
         }
         Relationships: []
       }
-      empreendimentos: {
+      construtoras: {
         Row: {
-          created_at: string
+          ativo: boolean | null
+          created_at: string | null
           descricao: string | null
           id: string
-          imagem_url: string | null
           nome: string
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      empreendimento_categorias: {
+        Row: {
+          categoria_id: string
+          created_at: string | null
+          empreendimento_id: string
+        }
+        Insert: {
+          categoria_id: string
+          created_at?: string | null
+          empreendimento_id: string
+        }
+        Update: {
+          categoria_id?: string
+          created_at?: string | null
+          empreendimento_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empreendimento_categorias_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empreendimento_categorias_empreendimento_id_fkey"
+            columns: ["empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "empreendimentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      empreendimento_cidades: {
+        Row: {
+          cidade_id: string
+          created_at: string | null
+          empreendimento_id: string
+        }
+        Insert: {
+          cidade_id: string
+          created_at?: string | null
+          empreendimento_id: string
+        }
+        Update: {
+          cidade_id?: string
+          created_at?: string | null
+          empreendimento_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empreendimento_cidades_cidade_id_fkey"
+            columns: ["cidade_id"]
+            isOneToOne: false
+            referencedRelation: "cidades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empreendimento_cidades_empreendimento_id_fkey"
+            columns: ["empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "empreendimentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      empreendimento_construtoras: {
+        Row: {
+          construtora_id: string
+          created_at: string | null
+          empreendimento_id: string
+        }
+        Insert: {
+          construtora_id: string
+          created_at?: string | null
+          empreendimento_id: string
+        }
+        Update: {
+          construtora_id?: string
+          created_at?: string | null
+          empreendimento_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empreendimento_construtoras_construtora_id_fkey"
+            columns: ["construtora_id"]
+            isOneToOne: false
+            referencedRelation: "construtoras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empreendimento_construtoras_empreendimento_id_fkey"
+            columns: ["empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "empreendimentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      empreendimento_equipes: {
+        Row: {
+          created_at: string | null
+          empreendimento_id: string
+          equipe_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          empreendimento_id: string
+          equipe_id: string
+        }
+        Update: {
+          created_at?: string | null
+          empreendimento_id?: string
+          equipe_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empreendimento_equipes_empreendimento_id_fkey"
+            columns: ["empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "empreendimentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empreendimento_equipes_equipe_id_fkey"
+            columns: ["equipe_id"]
+            isOneToOne: false
+            referencedRelation: "equipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      empreendimento_faixas_preco: {
+        Row: {
+          created_at: string | null
+          empreendimento_id: string
+          faixa_preco_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          empreendimento_id: string
+          faixa_preco_id: string
+        }
+        Update: {
+          created_at?: string | null
+          empreendimento_id?: string
+          faixa_preco_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empreendimento_faixas_preco_empreendimento_id_fkey"
+            columns: ["empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "empreendimentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empreendimento_faixas_preco_faixa_preco_id_fkey"
+            columns: ["faixa_preco_id"]
+            isOneToOne: false
+            referencedRelation: "faixas_preco"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      empreendimento_segmentos: {
+        Row: {
+          created_at: string | null
+          empreendimento_id: string
+          segmento_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          empreendimento_id: string
+          segmento_id: string
+        }
+        Update: {
+          created_at?: string | null
+          empreendimento_id?: string
+          segmento_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empreendimento_segmentos_empreendimento_id_fkey"
+            columns: ["empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "empreendimentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "empreendimento_segmentos_segmento_id_fkey"
+            columns: ["segmento_id"]
+            isOneToOne: false
+            referencedRelation: "segmentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      empreendimentos: {
+        Row: {
+          codigo: string | null
+          created_at: string
+          descricao: string | null
+          endereco_completo: string | null
+          foto_capa_url: string | null
+          id: string
+          imagem_url: string | null
+          latitude: number | null
+          longitude: number | null
+          metragem_max: number | null
+          metragem_min: number | null
+          nome: string
+          status_empreendimento: string | null
+          subtitulo: string | null
+          titulo: string | null
           updated_at: string
         }
         Insert: {
+          codigo?: string | null
           created_at?: string
           descricao?: string | null
+          endereco_completo?: string | null
+          foto_capa_url?: string | null
           id?: string
           imagem_url?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          metragem_max?: number | null
+          metragem_min?: number | null
           nome: string
+          status_empreendimento?: string | null
+          subtitulo?: string | null
+          titulo?: string | null
           updated_at?: string
         }
         Update: {
+          codigo?: string | null
           created_at?: string
           descricao?: string | null
+          endereco_completo?: string | null
+          foto_capa_url?: string | null
           id?: string
           imagem_url?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          metragem_max?: number | null
+          metragem_min?: number | null
           nome?: string
+          status_empreendimento?: string | null
+          subtitulo?: string | null
+          titulo?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -130,6 +570,36 @@ export type Database = {
           nome?: string
           tipo?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      faixas_preco: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          id: string
+          nome: string
+          updated_at: string | null
+          valor_max: number | null
+          valor_min: number | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          id?: string
+          nome: string
+          updated_at?: string | null
+          valor_max?: number | null
+          valor_min?: number | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string | null
+          valor_max?: number | null
+          valor_min?: number | null
         }
         Relationships: []
       }
@@ -394,6 +864,33 @@ export type Database = {
           },
         ]
       }
+      segmentos: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          descricao: string | null
+          id: string
+          nome: string
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       unidades: {
         Row: {
           area: number | null
@@ -434,6 +931,48 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "unidades_empreendimento_id_fkey"
+            columns: ["empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "empreendimentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      valores_campos_personalizados: {
+        Row: {
+          campo_personalizado_id: string | null
+          created_at: string | null
+          empreendimento_id: string | null
+          id: string
+          updated_at: string | null
+          valor: string | null
+        }
+        Insert: {
+          campo_personalizado_id?: string | null
+          created_at?: string | null
+          empreendimento_id?: string | null
+          id?: string
+          updated_at?: string | null
+          valor?: string | null
+        }
+        Update: {
+          campo_personalizado_id?: string | null
+          created_at?: string | null
+          empreendimento_id?: string | null
+          id?: string
+          updated_at?: string | null
+          valor?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "valores_campos_personalizados_campo_personalizado_id_fkey"
+            columns: ["campo_personalizado_id"]
+            isOneToOne: false
+            referencedRelation: "campos_personalizados"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "valores_campos_personalizados_empreendimento_id_fkey"
             columns: ["empreendimento_id"]
             isOneToOne: false
             referencedRelation: "empreendimentos"
