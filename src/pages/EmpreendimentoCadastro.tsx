@@ -195,7 +195,7 @@ export default function EmpreendimentoCadastro() {
       }
 
       toast.success('Empreendimento cadastrado com sucesso!');
-      navigate(`/empreendimentos/${empreendimento.id}/disponibilidade`);
+      navigate(`/empreendimentos/${empreendimento.id}`);
     } catch (error) {
       console.error('Erro ao salvar empreendimento:', error);
       toast.error('Erro ao salvar empreendimento');

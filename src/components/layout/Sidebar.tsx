@@ -104,7 +104,7 @@ export function Sidebar({ isOpen, closeSidebar }: SidebarProps) {
         { title: "Todos os Empreendimentos", href: "/empreendimentos" },
         { 
           title: "Adicionar Empreendimento", 
-          href: "/empreendimentos/adicionar", 
+          href: "/empreendimentos/cadastro", 
           roles: [UserRole.GERENTE, UserRole.ADMINISTRADOR, UserRole.GERENTE_PRODUTO] 
         },
         { title: "Destaques", href: "/empreendimentos/destaques" },

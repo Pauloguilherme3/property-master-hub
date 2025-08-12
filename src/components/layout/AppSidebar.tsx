@@ -61,6 +61,11 @@ export function AppSidebar() {
       icon: Building
     },
     {
+      title: "Novo Empreendimento",
+      href: "/empreendimentos/cadastro",
+      icon: Building
+    },
+    {
       title: "Reservas",
       href: "/reservas",
       icon: Calendar

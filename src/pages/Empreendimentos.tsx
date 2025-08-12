@@ -122,7 +122,7 @@ export default function Empreendimentos() {
   });
 
   const handleAddProperty = () => {
-    navigate('/empreendimento-cadastro');
+    navigate('/empreendimentos/cadastro');
   };
 
   const handleViewProperty = (id: string) => {
@@ -145,12 +145,10 @@ export default function Empreendimentos() {
               Explore e gerencie seus empreendimentos imobiliários
             </p>
           </div>
-          {canManageProperties && (
-            <Button onClick={handleAddProperty}>
-              <Plus className="mr-2 h-4 w-4" />
-              Adicionar Empreendimento
-            </Button>
-          )}
+          <Button onClick={handleAddProperty}>
+            <Plus className="mr-2 h-4 w-4" />
+            Adicionar Empreendimento
+          </Button>
         </div>
 
         <Tabs defaultValue="properties" className="space-y-4">

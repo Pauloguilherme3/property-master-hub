@@ -20,6 +20,7 @@ import { ChevronLeft, Home, MapPin, Calendar, Building, Ruler, User, Phone, Mail
 import { mockEmpreendimentos, mockUnidades, getStatusUnidade } from "@/utils/animations";
 import { formatCurrency } from "@/utils/animations";
 import { EditEmpreendimentoImages } from "@/components/forms/EditEmpreendimentoImages";
+import { supabase } from "@/integrations/supabase/client";
 
 const EmpreendimentoDetalhePage = () => {
   const { id } = useParams<{ id: string }>();
@@ -51,9 +52,19 @@ const EmpreendimentoDetalhePage = () => {
     queryKey: ["unidades", id],
     enabled: !!id,
     queryFn: async () => {
-      // Este seria uma chamada de API em uma aplicação real
-      await new Promise(resolve => setTimeout(resolve, 800));
-      return mockUnidades.filter(u => u.empreendimentoId === id);
+      const { data, error } = await supabase
+        .from('unidades')
+        .select('*')
+        .eq('empreendimento_id', id);
+      if (error) throw error;
+      return (data || []).map((u: any) => ({
+        id: u.id,
+        numero: u.lote ? String(u.lote) : u.id,
+        area: Number(u.area) || 0,
+        preco: Number(u.preco) || 0,
+        status: (u.disponibilidade as string) || 'disponivel',
+        empreendimentoId: u.empreendimento_id,
+      }));
     }
   });
   
