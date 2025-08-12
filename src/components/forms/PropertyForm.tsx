@@ -20,24 +20,20 @@ import {
 } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { X } from "lucide-react";
-import { dataService } from "@/services/dataService";
-import { Empreendimento } from "@/types";
+import { supabase } from "@/integrations/supabase/client";
 
 const propertyFormSchema = z.object({
   nome: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
   descricao: z.string().min(10, "Descrição deve ter pelo menos 10 caracteres"),
-  preco: z.coerce.number().min(1, "Preço deve ser maior que zero"),
-  endereco: z.string().min(5, "Endereço deve ter pelo menos 5 caracteres"),
-  cidade: z.string().min(2, "Cidade deve ter pelo menos 2 caracteres"),
-  estado: z.string().min(2, "Estado deve ter pelo menos 2 caracteres"),
-  cep: z.string().min(8, "CEP deve ter pelo menos 8 caracteres"),
-  construtora: z.string().min(2, "Construtora deve ter pelo menos 2 caracteres"),
-  tipoImovel: z.enum(["lote", "casa", "apartamento", "comercial"]),
-  previsaoEntrega: z.string().min(5, "Previsão de entrega é obrigatória"),
-  dormitorios: z.coerce.number().min(0, "Número de dormitórios deve ser positivo"),
-  banheiros: z.coerce.number().min(0, "Número de banheiros deve ser positivo"),
-  area: z.coerce.number().min(1, "Área deve ser maior que zero"),
-  status: z.enum(["disponivel", "reservado", "vendido"]).default("disponivel"),
+  titulo: z.string().optional(),
+  subtitulo: z.string().optional(),
+  codigo: z.string().optional(),
+  endereco_completo: z.string().min(5, "Endereço deve ter pelo menos 5 caracteres"),
+  latitude: z.coerce.number().optional(),
+  longitude: z.coerce.number().optional(),
+  metragem_min: z.coerce.number().min(1, "Metragem mínima deve ser maior que zero"),
+  metragem_max: z.coerce.number().optional(),
+  status_empreendimento: z.enum(["ativo", "inativo", "vendido"]).default("ativo"),
 });
 
 type PropertyFormValues = z.infer<typeof propertyFormSchema>;
@@ -56,44 +52,50 @@ export function PropertyForm({ onCancel }: PropertyFormProps) {
     defaultValues: {
       nome: "",
       descricao: "",
-      preco: 0,
-      endereco: "",
-      cidade: "",
-      estado: "",
-      cep: "",
-      construtora: "",
-      tipoImovel: "casa",
-      previsaoEntrega: new Date().toISOString().split('T')[0],
-      dormitorios: 0,
-      banheiros: 0,
-      area: 0,
-      status: "disponivel",
+      titulo: "",
+      subtitulo: "",
+      codigo: "",
+      endereco_completo: "",
+      latitude: 0,
+      longitude: 0,
+      metragem_min: 0,
+      metragem_max: 0,
+      status_empreendimento: "ativo",
     },
   });
 
   async function onSubmit(data: PropertyFormValues) {
     setIsSubmitting(true);
     try {
-      // Create a new property object
-      const newProperty: Partial<Empreendimento> = {
-        ...data,
-        imagens: ["/placeholder.svg"],
-        destaque: false,
-        dataCriacao: new Date().toISOString(),
-        dataAtualizacao: new Date().toISOString(),
-        criadoPor: "current-user", // This would be the current user's ID in a real app
-      };
+      // Save to Supabase
+      const { error } = await supabase
+        .from("empreendimentos")
+        .insert({
+          nome: data.nome,
+          descricao: data.descricao,
+          titulo: data.titulo,
+          subtitulo: data.subtitulo,
+          codigo: data.codigo,
+          endereco_completo: data.endereco_completo,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          metragem_min: data.metragem_min,
+          metragem_max: data.metragem_max,
+          status_empreendimento: data.status_empreendimento,
+        });
 
-      // Save the new property
-      const result = await dataService.createDocument<Partial<Empreendimento>>("empreendimentos", newProperty);
+      if (error) {
+        throw error;
+      }
       
       toast({
         title: "Empreendimento criado",
         description: `O empreendimento ${data.nome} foi criado com sucesso.`,
       });
       
-      // Navigate to the properties page or the new property page
-      navigate("/properties");
+      // Navigate to the properties page
+      navigate("/empreendimentos");
+      onCancel();
     } catch (error) {
       console.error("Error creating property:", error);
       toast({
@@ -137,12 +139,12 @@ export function PropertyForm({ onCancel }: PropertyFormProps) {
               
               <FormField
                 control={form.control}
-                name="construtora"
+                name="titulo"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Construtora</FormLabel>
+                    <FormLabel>Título (opcional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nome da Construtora" {...field} />
+                      <Input placeholder="Título do empreendimento" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -151,36 +153,12 @@ export function PropertyForm({ onCancel }: PropertyFormProps) {
               
               <FormField
                 control={form.control}
-                name="tipoImovel"
+                name="subtitulo"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tipo de Imóvel</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o tipo" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="lote">Lote</SelectItem>
-                        <SelectItem value="casa">Casa</SelectItem>
-                        <SelectItem value="apartamento">Apartamento</SelectItem>
-                        <SelectItem value="comercial">Comercial</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="preco"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Preço (R$)</FormLabel>
+                    <FormLabel>Subtítulo (opcional)</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="0.00" {...field} />
+                      <Input placeholder="Subtítulo do empreendimento" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -189,10 +167,24 @@ export function PropertyForm({ onCancel }: PropertyFormProps) {
               
               <FormField
                 control={form.control}
-                name="area"
+                name="codigo"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Área (m²)</FormLabel>
+                    <FormLabel>Código (opcional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Código interno" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="metragem_min"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Metragem Mínima (m²)</FormLabel>
                     <FormControl>
                       <Input type="number" placeholder="0" {...field} />
                     </FormControl>
@@ -203,10 +195,10 @@ export function PropertyForm({ onCancel }: PropertyFormProps) {
               
               <FormField
                 control={form.control}
-                name="dormitorios"
+                name="metragem_max"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Dormitórios</FormLabel>
+                    <FormLabel>Metragem Máxima (m²) - opcional</FormLabel>
                     <FormControl>
                       <Input type="number" placeholder="0" {...field} />
                     </FormControl>
@@ -217,12 +209,12 @@ export function PropertyForm({ onCancel }: PropertyFormProps) {
               
               <FormField
                 control={form.control}
-                name="banheiros"
+                name="endereco_completo"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Banheiros</FormLabel>
+                    <FormLabel>Endereço Completo</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="0" {...field} />
+                      <Input placeholder="Rua, Número, Bairro, Cidade, Estado" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -231,21 +223,7 @@ export function PropertyForm({ onCancel }: PropertyFormProps) {
               
               <FormField
                 control={form.control}
-                name="previsaoEntrega"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Previsão de Entrega</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="status"
+                name="status_empreendimento"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
@@ -256,8 +234,8 @@ export function PropertyForm({ onCancel }: PropertyFormProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="disponivel">Disponível</SelectItem>
-                        <SelectItem value="reservado">Reservado</SelectItem>
+                        <SelectItem value="ativo">Ativo</SelectItem>
+                        <SelectItem value="inativo">Inativo</SelectItem>
                         <SelectItem value="vendido">Vendido</SelectItem>
                       </SelectContent>
                     </Select>
@@ -270,12 +248,12 @@ export function PropertyForm({ onCancel }: PropertyFormProps) {
             <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
               <FormField
                 control={form.control}
-                name="endereco"
+                name="latitude"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Endereço</FormLabel>
+                    <FormLabel>Latitude (opcional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Rua, Número" {...field} />
+                      <Input type="number" step="any" placeholder="-23.5505" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -284,40 +262,12 @@ export function PropertyForm({ onCancel }: PropertyFormProps) {
               
               <FormField
                 control={form.control}
-                name="cep"
+                name="longitude"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>CEP</FormLabel>
+                    <FormLabel>Longitude (opcional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="00000-000" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="cidade"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cidade</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nome da Cidade" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="estado"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Estado</FormLabel>
-                    <FormControl>
-                      <Input placeholder="UF" {...field} />
+                      <Input type="number" step="any" placeholder="-46.6333" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

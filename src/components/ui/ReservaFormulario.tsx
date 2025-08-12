@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { Empreendimento, Unidade } from "@/types";
+import type { Database } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -22,13 +21,13 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/utils/animations";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ReservaFormularioProps {
-  empreendimento: Empreendimento;
-  unidade: Unidade;
+  empreendimento: Database['public']['Tables']['empreendimentos']['Row'];
+  unidade: Database['public']['Tables']['unidades']['Row'];
 }
 
 export function ReservaFormulario({ empreendimento, unidade }: ReservaFormularioProps) {
@@ -99,7 +98,7 @@ export function ReservaFormulario({ empreendimento, unidade }: ReservaFormulario
 
     toast({
       title: "Reserva enviada",
-      description: `Sua reserva para ${unidade.numero} em ${format(data, "PPP", { locale: ptBR })} às ${horario} foi registrada.`,
+      description: `Sua reserva para o lote ${unidade.lote} em ${format(data, "PPP", { locale: ptBR })} às ${horario} foi registrada.`,
     });
 
     // Resetar formulário
@@ -237,7 +236,11 @@ export function ReservaFormulario({ empreendimento, unidade }: ReservaFormulario
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Unidade:</span>
-            <span className="font-medium">{unidade.numero}</span>
+            <span className="font-medium">{unidade.lote}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Quadra:</span>
+            <span className="font-medium">{unidade.quadra}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Área:</span>
@@ -245,7 +248,7 @@ export function ReservaFormulario({ empreendimento, unidade }: ReservaFormulario
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Valor:</span>
-            <span className="font-medium">{formatCurrency(unidade.preco)}</span>
+            <span className="font-medium">{formatCurrency(unidade.preco || 0)}</span>
           </div>
         </div>
       </div>

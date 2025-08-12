@@ -11,8 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ChevronLeft, Home } from "lucide-react";
-import { mockEmpreendimentos, mockUnidades } from "@/utils/animations";
 import { ReservaFormulario } from "@/components/ui/ReservaFormulario";
+import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 
 const ReservaFormularioPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,24 +22,38 @@ const ReservaFormularioPage = () => {
   const { data: unidade, isLoading: loadingUnidade } = useQuery({
     queryKey: ["unidade", id],
     queryFn: async () => {
-      // Este seria uma chamada de API em uma aplicação real
-      await new Promise(resolve => setTimeout(resolve, 800));
-      const resultado = mockUnidades.find(u => u.id === id);
-      if (!resultado) throw new Error("Unidade não encontrada");
-      return resultado;
+      if (!id) throw new Error("ID da unidade não fornecido");
+      
+      const { data, error } = await supabase
+        .from("unidades")
+        .select("*")
+        .eq("id", id)
+        .single();
+      
+      if (error) throw error;
+      if (!data) throw new Error("Unidade não encontrada");
+      
+      return data;
     }
   });
   
   // Fetching empreendimento data
   const { data: empreendimento, isLoading: loadingEmpreendimento } = useQuery({
-    queryKey: ["empreendimento", unidade?.empreendimentoId],
-    enabled: !!unidade,
+    queryKey: ["empreendimento", unidade?.empreendimento_id],
+    enabled: !!unidade?.empreendimento_id,
     queryFn: async () => {
-      // Este seria uma chamada de API em uma aplicação real
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const resultado = mockEmpreendimentos.find(e => e.id === unidade?.empreendimentoId);
-      if (!resultado) throw new Error("Empreendimento não encontrado");
-      return resultado;
+      if (!unidade?.empreendimento_id) throw new Error("ID do empreendimento não fornecido");
+      
+      const { data, error } = await supabase
+        .from("empreendimentos")
+        .select("*")
+        .eq("id", unidade.empreendimento_id)
+        .single();
+      
+      if (error) throw error;
+      if (!data) throw new Error("Empreendimento não encontrado");
+      
+      return data;
     }
   });
   
@@ -49,7 +64,7 @@ const ReservaFormularioPage = () => {
       <div className="flex flex-col space-y-6 max-w-3xl mx-auto">
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" asChild>
-            <Link to={`/empreendimentos/${unidade?.empreendimentoId}`}>
+            <Link to={`/empreendimentos/${unidade?.empreendimento_id}`}>
               <ChevronLeft className="h-4 w-4 mr-1" />
               Voltar
             </Link>
