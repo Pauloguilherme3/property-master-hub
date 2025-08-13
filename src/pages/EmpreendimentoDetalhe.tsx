@@ -390,7 +390,7 @@ const EmpreendimentoDetalhePage = () => {
                         <TableCell className="text-right">
                           {unidade.status === "disponivel" && (
                             <Button size="sm" asChild>
-                              <Link to={`/unidades/${unidade.id}/reserva`}>
+                              <Link to={`/reservas/formulario/${unidade.id}`}>
                                 Reservar
                               </Link>
                             </Button>

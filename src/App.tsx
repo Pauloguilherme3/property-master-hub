@@ -207,6 +207,14 @@ function App() {
                 } 
               />
               <Route 
+                path="/reservas/formulario/:id" 
+                element={
+                  <AppLayout>
+                    <ReservaFormulario />
+                  </AppLayout>
+                } 
+              />
+              <Route 
                 path="/reservas" 
                 element={
                   <AppLayout>
