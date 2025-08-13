@@ -65,8 +65,8 @@ export function Navbar({ toggleSidebar, isSidebarOpen }: NavbarProps) {
   );
 
   // Get the display name and initial safely
-  const displayName = user?.nome || "";
-  const userInitial = displayName.charAt(0) || "";
+  const displayName = user?.email?.split('@')[0] || "";
+  const userInitial = displayName.charAt(0).toUpperCase() || "";
 
   return (
     <nav className={navbarClasses}>
@@ -116,7 +116,7 @@ export function Navbar({ toggleSidebar, isSidebarOpen }: NavbarProps) {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-10 w-10 rounded-full transition-all">
                       <Avatar className="h-9 w-9 transition-all">
-                        <AvatarImage src={user.avatar} alt={displayName} />
+                        <AvatarImage src="" alt={displayName} />
                         <AvatarFallback>{userInitial}</AvatarFallback>
                       </Avatar>
                     </Button>

@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -25,9 +25,16 @@ import { mockEmpreendimentos, formatCurrency } from "@/utils/animations";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function IndexPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [tipoImovelFilter, setTipoImovelFilter] = useState("todos");
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      navigate("/auth");
+    }
+  }, [isAuthenticated, isLoading, navigate]);
   
   // Filtrar empreendimentos em destaque
   const empreendimentosDestaque = mockEmpreendimentos
@@ -72,14 +79,14 @@ export default function IndexPage() {
                       <ChevronRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
-                ) : (
-                  <Button asChild size="lg" className="font-medium">
-                    <Link to="/login">
-                      <LogIn className="mr-2 h-4 w-4" />
-                      Entrar no Sistema
-                    </Link>
-                  </Button>
-                )}
+                 ) : (
+                   <Button asChild size="lg" className="font-medium">
+                     <Link to="/auth">
+                       <LogIn className="mr-2 h-4 w-4" />
+                       Entrar no Sistema
+                     </Link>
+                   </Button>
+                 )}
                 <Button asChild variant="secondary" size="lg">
                   <Link to="/empreendimentos">
                     Ver Empreendimentos

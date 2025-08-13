@@ -34,6 +34,7 @@ import SheetsTest from "./pages/SheetsTest";
 import DriveTest from "./pages/DriveTest";
 import { CreatePropertyModal } from "./components/modals/CreatePropertyModal";
 import AdminConfiguracoes from "./pages/AdminConfiguracoes";
+import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
 
@@ -89,6 +90,10 @@ function App() {
             <Toaster />
             <Sonner />
             <Routes>
+              <Route 
+                path="/auth" 
+                element={<Auth />} 
+              />
               <Route 
                 path="/login" 
                 element={<LoginPage />} 

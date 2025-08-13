@@ -1,223 +1,73 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { User, UserRole, UserStatus, AuthContextType } from "@/types";
 import { useToast } from "@/components/ui/use-toast";
-import { 
-  onAuthChange, 
-  signIn as firebaseSignIn, 
-  signOut as firebaseSignOut,
-  signUp as firebaseSignUp
-} from "@/services/authService";
-import { getDocument, setDocument, updateDocument } from "@/services/dbService";
-import { FirebaseUser } from "@/lib/firebase-exports";
-import { auth } from "@/config/firebase";
+import { supabase } from "@/integrations/supabase/client";
+import type { User, Session } from "@supabase/supabase-js";
+
+interface AuthContextType {
+  user: User | null;
+  session: Session | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  isFirebaseInitialized: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  register: (email: string, password: string, name: string) => Promise<void>;
+  hasPermission: (role?: string | string[]) => boolean;
+}
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
+  session: null,
   isAuthenticated: false,
   isLoading: true,
-  isFirebaseInitialized: false,
+  isFirebaseInitialized: true,
   login: async () => { throw new Error("AuthContext not initialized"); },
   logout: async () => { throw new Error("AuthContext not initialized"); },
   register: async () => { throw new Error("AuthContext not initialized"); },
-  hasPermission: () => false,
+  hasPermission: () => true,
 });
-
-const ADMIN_EMAIL = "paulo100psy@gmail.com";
-
-const isAdminEmail = (email: string): boolean => {
-  return email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-};
-
-const mapFirebaseUser = async (firebaseUser: FirebaseUser): Promise<User> => {
-  try {
-    const email = firebaseUser.email || "";
-    const isAdmin = isAdminEmail(email);
-    
-    const userData = await getDocument("users", firebaseUser.uid);
-    
-    if (userData) {
-      if (isAdmin && (userData.role !== UserRole.ADMINISTRADOR || userData.status !== UserStatus.ATIVO)) {
-        const updatedUser = {
-          ...userData,
-          role: UserRole.ADMINISTRADOR,
-          status: UserStatus.ATIVO
-        };
-        
-        await updateDocument("users", firebaseUser.uid, {
-          role: UserRole.ADMINISTRADOR,
-          status: UserStatus.ATIVO
-        });
-        
-        console.log("Admin privileges enforced for admin user");
-        return updatedUser as User;
-      }
-      
-      return userData as User;
-    }
-    
-    const defaultUser: User = {
-      id: firebaseUser.uid,
-      nome: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "Usuário",
-      name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "User",
-      email: email,
-      role: isAdmin ? UserRole.ADMINISTRADOR : UserRole.CORRETOR,
-      status: isAdmin ? UserStatus.ATIVO : UserStatus.PENDENTE,
-      dataCadastro: new Date().toISOString(),
-      avatar: firebaseUser.photoURL || "",
-    };
-    
-    await setDocument("users", firebaseUser.uid, defaultUser);
-    
-    return defaultUser;
-  } catch (error) {
-    console.error("Error mapping Firebase user:", error);
-    const email = firebaseUser.email || "";
-    const isAdmin = isAdminEmail(email);
-    
-    return {
-      id: firebaseUser.uid,
-      nome: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "Usuário",
-      name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || "User",
-      email: email,
-      role: isAdmin ? UserRole.ADMINISTRADOR : UserRole.CORRETOR,
-      status: isAdmin ? UserStatus.ATIVO : UserStatus.PENDENTE,
-      dataCadastro: new Date().toISOString(),
-      avatar: firebaseUser.photoURL || "",
-    };
-  }
-};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isFirebaseInitialized, setIsFirebaseInitialized] = useState<boolean>(!!auth);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!auth) {
-      console.error("Firebase authentication is not initialized. Auth features won't work.");
-      setIsFirebaseInitialized(false);
-      setIsLoading(false);
-      return () => {};
-    }
-    
-    let unsubscribe = () => {};
-    
-    try {
-      unsubscribe = onAuthChange(async (firebaseUser) => {
-        setIsLoading(true);
-        
-        if (firebaseUser) {
-          try {
-            const userData = await mapFirebaseUser(firebaseUser);
-            
-            if (isAdminEmail(firebaseUser.email || "")) {
-              console.log("Admin user detected, granting full access");
-              setUser(userData);
-              localStorage.setItem("user", JSON.stringify(userData));
-              setIsLoading(false);
-              return;
-            }
-            
-            if (userData.status === UserStatus.ATIVO) {
-              setUser(userData);
-              localStorage.setItem("user", JSON.stringify(userData));
-            } else {
-              setUser(null);
-              localStorage.removeItem("user");
-              
-              if (auth.currentUser) {
-                await firebaseSignOut();
-              }
-              
-              if (userData.status === UserStatus.PENDENTE) {
-                toast({
-                  title: "Cadastro pendente",
-                  description: "Seu cadastro está aguardando aprovação por um administrador.",
-                  duration: 5000,
-                });
-              } else if (userData.status === UserStatus.INATIVO) {
-                toast({
-                  variant: "destructive",
-                  title: "Acesso negado",
-                  description: "Seu cadastro foi desativado ou rejeitado.",
-                  duration: 5000,
-                });
-              }
-            }
-          } catch (error) {
-            console.error("Error mapping user data:", error);
-            setUser(null);
-            localStorage.removeItem("user");
-          }
-        } else {
-          setUser(null);
-          localStorage.removeItem("user");
-        }
-        
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
         setIsLoading(false);
-      });
-    } catch (error) {
-      console.error("Error setting up auth state listener:", error);
-      setIsLoading(false);
-    }
-    
-    return () => {
-      if (typeof unsubscribe === 'function') {
-        unsubscribe();
       }
-    };
-  }, [toast]);
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const login = async (email: string, password: string) => {
-    if (!isFirebaseInitialized) {
-      toast({
-        title: "Firebase não inicializado",
-        description: "O serviço de autenticação não está disponível no momento.",
-        variant: "destructive",
-      });
-      throw new Error("Firebase authentication is not initialized");
-    }
-
     setIsLoading(true);
     
     try {
-      const isAdmin = isAdminEmail(email);
-      
-      const firebaseUser = await firebaseSignIn(email, password);
-      const userData = await mapFirebaseUser(firebaseUser);
-      
-      if (isAdmin) {
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
-        
-        toast({
-          title: "Login bem-sucedido",
-          description: `Bem-vindo, Administrador!`,
-        });
-        
-        return userData;
-      }
-      
-      if (userData.status !== UserStatus.ATIVO) {
-        await firebaseSignOut();
-        
-        if (userData.status === UserStatus.PENDENTE) {
-          throw new Error("Seu cadastro está aguardando aprovação por um administrador.");
-        } else {
-          throw new Error("Seu cadastro foi desativado ou rejeitado.");
-        }
-      }
-      
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
-      
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
       toast({
         title: "Login bem-sucedido",
-        description: `Bem-vindo de volta, ${userData.nome}!`,
+        description: "Bem-vindo de volta!",
       });
-      
-      return userData;
     } catch (error: any) {
       toast({
         title: "Falha no login",
@@ -231,53 +81,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (email: string, password: string, name: string) => {
-    if (!isFirebaseInitialized) {
-      toast({
-        title: "Firebase não inicializado",
-        description: "O serviço de autenticação não está disponível no momento.",
-        variant: "destructive",
-      });
-      throw new Error("Firebase authentication is not initialized");
-    }
-
     setIsLoading(true);
     
     try {
-      const firebaseUser = await firebaseSignUp(email, password, name);
+      const redirectUrl = `${window.location.origin}/`;
       
-      const newUser: User = {
-        id: firebaseUser.uid,
-        nome: name,
-        name: name,
-        email: email,
-        role: UserRole.CORRETOR,
-        status: UserStatus.PENDENTE,
-        dataCadastro: new Date().toISOString(),
-        avatar: "",
-      };
-      
-      await setDocument("users", firebaseUser.uid, newUser);
-      
-      await firebaseSignOut();
-      
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            nome: name,
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Cadastro realizado",
+        description: "Verifique seu email para confirmar a conta.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro no cadastro",
+        description: error.message || "Erro ao criar conta",
+        variant: "destructive",
+      });
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const logout = async () => {
-    if (!isFirebaseInitialized) {
-      setUser(null);
-      localStorage.removeItem("user");
-      return;
-    }
-
     try {
-      await firebaseSignOut();
-      setUser(null);
-      localStorage.removeItem("user");
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
       
       toast({
         title: "Desconectado",
@@ -292,29 +133,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const hasPermission = (requiredRole: UserRole | UserRole[]): boolean => {
-    if (!user) return false;
-    
-    if (user.status !== UserStatus.ATIVO) return false;
-    
-    if (Array.isArray(requiredRole)) {
-      return requiredRole.some(role => user.role === role);
-    }
-    
-    return user.role === requiredRole;
+  const hasPermission = (role?: string | string[]): boolean => {
+    // Permitir acesso para usuários autenticados (simplificado)
+    return !!user;
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        session,
         isAuthenticated: !!user,
         isLoading,
+        isFirebaseInitialized: true,
         login,
         logout,
         register,
         hasPermission,
-        isFirebaseInitialized,
       }}
     >
       {children}

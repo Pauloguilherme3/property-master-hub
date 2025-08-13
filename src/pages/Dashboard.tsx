@@ -35,7 +35,7 @@ const Dashboard = () => {
     <div className="container px-4 mx-auto py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">
-          Bem-vindo de volta, {user.nome}
+          Bem-vindo de volta, {user.email?.split('@')[0]}
         </h1>
         <p className="text-muted-foreground">
           Aqui está o que está acontecendo com seus empreendimentos hoje.
