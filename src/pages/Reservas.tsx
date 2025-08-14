@@ -10,9 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Calendar as CalendarIcon, Search, Filter, Eye, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Calendar as CalendarIcon, Search, Filter, Eye, CheckCircle, XCircle, Clock, Plus } from "lucide-react";
 import { mockEmpreendimentos, mockUnidades, mockReservas, getStatusReserva } from "@/utils/animations";
 import { Reserva, Empreendimento, Unidade } from "@/types";
+import { ReservaModal } from "@/components/modals/ReservaModal";
 
 const ReservasPage = () => {
   const { user, isAuthenticated } = useAuth();
@@ -23,6 +24,7 @@ const ReservasPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("todos");
+  const [isReservaModalOpen, setIsReservaModalOpen] = useState(false);
   
   // Redirecionar se não estiver autenticado
   useEffect(() => {
@@ -94,10 +96,9 @@ const ReservasPage = () => {
             Gerencie e visualize todas as reservas de imóveis.
           </p>
         </div>
-        <Button asChild>
-          <Link to="/empreendimentos">
-            Nova Reserva
-          </Link>
+        <Button onClick={() => setIsReservaModalOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Nova Reserva
         </Button>
       </div>
       
@@ -347,6 +348,11 @@ const ReservasPage = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <ReservaModal 
+        isOpen={isReservaModalOpen}
+        onClose={() => setIsReservaModalOpen(false)}
+      />
     </div>
   );
 };

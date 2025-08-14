@@ -42,6 +42,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { PropertyCard } from "@/components/ui/PropertyCard";
+import { ReservaModal } from "@/components/modals/ReservaModal";
 import { UserRole } from "@/types";
 
 export default function Empreendimentos() {
@@ -54,6 +55,7 @@ export default function Empreendimentos() {
   const [filtros, setFiltros] = useState<any>({});
   const [categorias, setCategorias] = useState<any[]>([]);
   const [cidades, setCidades] = useState<any[]>([]);
+  const [isReservaModalOpen, setIsReservaModalOpen] = useState(false);
 
   // Obter dados dos empreendimentos
   const { data: empreendimentos = [], isLoading, refetch } = useQuery({
@@ -146,10 +148,9 @@ export default function Empreendimentos() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" asChild>
-              <Link to="/reservas">
-                Nova Reserva
-              </Link>
+            <Button variant="outline" onClick={() => setIsReservaModalOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nova Reserva
             </Button>
             <Button onClick={handleAddProperty}>
               <Plus className="mr-2 h-4 w-4" />
@@ -340,6 +341,11 @@ export default function Empreendimentos() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <ReservaModal 
+        isOpen={isReservaModalOpen}
+        onClose={() => setIsReservaModalOpen(false)}
+      />
     </div>
   );
 }

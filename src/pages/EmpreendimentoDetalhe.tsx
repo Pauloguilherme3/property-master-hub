@@ -17,12 +17,14 @@ import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChevronLeft, Home, MapPin, Calendar, Building, Ruler, User, Phone, Mail, ArrowRight, CheckCircle, XCircle, Clock } from "lucide-react";
-import { mockEmpreendimentos, mockUnidades, getStatusUnidade } from "@/utils/animations";
-import { formatCurrency } from "@/utils/animations";
+import { mockEmpreendimentos, mockUnidades, getStatusUnidade, formatCurrency } from "@/utils/animations";
 import { EditEmpreendimentoImages } from "@/components/forms/EditEmpreendimentoImages";
 import { supabase } from "@/integrations/supabase/client";
+import { ReservaModal } from "@/components/modals/ReservaModal";
 
 const EmpreendimentoDetalhePage = () => {
+  const [isReservaModalOpen, setIsReservaModalOpen] = useState(false);
+  const [selectedUnidadeId, setSelectedUnidadeId] = useState<string>("");
   const { id } = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState("informacoes");
   const [empreendimento, setEmpreendimento] = useState(null);
@@ -389,10 +391,14 @@ const EmpreendimentoDetalhePage = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           {unidade.status === "disponivel" && (
-                            <Button size="sm" asChild>
-                              <Link to={`/reservas/formulario/${unidade.id}`}>
-                                Reservar
-                              </Link>
+                            <Button 
+                              size="sm" 
+                              onClick={() => {
+                                setSelectedUnidadeId(unidade.id);
+                                setIsReservaModalOpen(true);
+                              }}
+                            >
+                              Reservar
                             </Button>
                           )}
                           {unidade.status === "reservado" && (
@@ -494,6 +500,13 @@ const EmpreendimentoDetalhePage = () => {
             )}
           </TabsContent>
         </Tabs>
+
+        <ReservaModal 
+          isOpen={isReservaModalOpen}
+          onClose={() => setIsReservaModalOpen(false)}
+          preSelectedEmpreendimento={id}
+          preSelectedUnidade={selectedUnidadeId}
+        />
       </div>
     </div>
   );
