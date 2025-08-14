@@ -85,13 +85,20 @@ const ReservasPage = () => {
 
   return (
     <div className="container px-4 mx-auto py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Reservas
-        </h1>
-        <p className="text-muted-foreground">
-          Gerencie e visualize todas as reservas de imóveis.
-        </p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Reservas
+          </h1>
+          <p className="text-muted-foreground">
+            Gerencie e visualize todas as reservas de imóveis.
+          </p>
+        </div>
+        <Button asChild>
+          <Link to="/empreendimentos">
+            Nova Reserva
+          </Link>
+        </Button>
       </div>
       
       <Tabs

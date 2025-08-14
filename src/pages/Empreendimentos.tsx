@@ -145,10 +145,17 @@ export default function Empreendimentos() {
               Explore e gerencie seus empreendimentos imobiliários
             </p>
           </div>
-          <Button onClick={handleAddProperty}>
-            <Plus className="mr-2 h-4 w-4" />
-            Adicionar Empreendimento
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" asChild>
+              <Link to="/reservas">
+                Nova Reserva
+              </Link>
+            </Button>
+            <Button onClick={handleAddProperty}>
+              <Plus className="mr-2 h-4 w-4" />
+              Adicionar Empreendimento
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="properties" className="space-y-4">
